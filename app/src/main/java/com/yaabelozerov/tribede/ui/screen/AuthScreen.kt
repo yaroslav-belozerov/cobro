@@ -3,7 +3,10 @@ package com.yaabelozerov.tribede.ui.screen
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -23,26 +26,37 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
+import com.yaabelozerov.tribede.ui.components.MyButton
+import com.yaabelozerov.tribede.ui.components.MyTextField
 
 @Composable
-fun AuthPage(modifier: Modifier, onLogin: (LoginDto) -> Unit, onRegister: (RegisterDto) -> Unit) {
+fun AuthScreen(
+    onLogin: (LoginDto) -> Unit,
+    onRegister: (RegisterDto) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     var hasAccount by remember { mutableStateOf(true) }
     var loading by remember { mutableStateOf(false) }
     Crossfade(hasAccount) { acc ->
         Column(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize().padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("cobro", fontSize = 64.sp, fontWeight = FontWeight.Bold)
+            Text(
+                "cobro",
+                fontSize = 64.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
             if (acc) {
                 var loginDTO by remember { mutableStateOf(LoginDto("", "")) }
                 val isEmailValid =
                     remember(loginDTO.email.length) { (loginDTO.email.length in 5..50) }
                 var typedUsername by remember { mutableStateOf(false) }
-                OutlinedTextField(
+                MyTextField(
                     loginDTO.email,
-                    label = { Text("E-mail") },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = "E-mail",
                     enabled = !loading,
                     onValueChange = {
                         loginDTO = loginDTO.copy(email = it)
@@ -50,15 +64,15 @@ fun AuthPage(modifier: Modifier, onLogin: (LoginDto) -> Unit, onRegister: (Regis
                     },
                     singleLine = true,
                     isError = !isEmailValid && typedUsername,
-                    supportingText = { if (!isEmailValid && typedUsername) Text("Запишите e-mail в формате email@example.com") },
-                    shape = MaterialTheme.shapes.medium
+                    errorText = if (!isEmailValid && typedUsername) "Запишите e-mail в формате email@example.com" else null,
                 )
                 val isPasswordValid =
                     remember(loginDTO.password.length) { (loginDTO.password.length in 8..255) }
                 var typedPassword by remember { mutableStateOf(false) }
-                OutlinedTextField(
+                MyTextField(
                     loginDTO.password,
-                    label = { Text("Пароль") },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = "Пароль",
                     enabled = !loading,
                     visualTransformation = PasswordVisualTransformation(),
                     onValueChange = {
@@ -67,17 +81,24 @@ fun AuthPage(modifier: Modifier, onLogin: (LoginDto) -> Unit, onRegister: (Regis
                     },
                     singleLine = true,
                     isError = !isPasswordValid && typedPassword,
-                    supportingText = { if (!isPasswordValid && typedPassword) Text("Пароль должен содержать от 8 до 50 символов") },
-                    shape = MaterialTheme.shapes.medium
+                    errorText = if (!isPasswordValid && typedPassword) "Пароль должен содержать от 8 до 50 символов" else null,
                 )
-                if (!loading) Button(onClick = {
-                    onLogin(loginDTO)
-                    loading = true
-                }, enabled = !loading && isEmailValid && isPasswordValid) {
-                    Text("Войти")
-                } else CircularProgressIndicator()
-                TextButton(onClick = { hasAccount = false }, enabled = !loading) {
-                    Text("Регистрация")
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    TextButton(
+                        shape = MaterialTheme.shapes.small,
+                        onClick = { hasAccount = false },
+                        enabled = !loading
+                    ) {
+                        Text("Регистрация")
+                    }
+                    if (!loading) MyButton(
+                        text = "Войти",
+                        onClick = {
+                            onLogin(loginDTO)
+                            loading = true
+                        },
+                        enabled = !loading && isEmailValid && isPasswordValid,
+                    ) else CircularProgressIndicator()
                 }
             } else {
                 var registerDTO by remember {
@@ -87,28 +108,27 @@ fun AuthPage(modifier: Modifier, onLogin: (LoginDto) -> Unit, onRegister: (Regis
                         )
                     )
                 }
-                OutlinedTextField(
-                    registerDTO.name,
-                    label = { Text("Имя") },
+                MyTextField(registerDTO.name,
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = "Имя",
                     enabled = !loading,
                     singleLine = true,
-                    onValueChange = { registerDTO = registerDTO.copy(name = it) },
-                    shape = MaterialTheme.shapes.medium
-                )
-                OutlinedTextField(
+                    onValueChange = { registerDTO = registerDTO.copy(name = it) })
+                MyTextField(
                     registerDTO.surname,
-                    label = { Text("Фамилия") },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = "Фамилия",
                     enabled = !loading,
                     singleLine = true,
                     onValueChange = { registerDTO = registerDTO.copy(surname = it) },
-                    shape = MaterialTheme.shapes.medium
                 )
                 val isEmailValid =
                     remember(registerDTO.email.length) { (registerDTO.email.length in 5..50) }
                 var typedUsername by remember { mutableStateOf(false) }
-                OutlinedTextField(
+                MyTextField(
                     registerDTO.email,
-                    label = { Text("E-mail") },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = "E-mail",
                     enabled = !loading,
                     onValueChange = {
                         registerDTO = registerDTO.copy(email = it)
@@ -116,15 +136,15 @@ fun AuthPage(modifier: Modifier, onLogin: (LoginDto) -> Unit, onRegister: (Regis
                     },
                     singleLine = true,
                     isError = !isEmailValid && typedUsername,
-                    supportingText = { if (!isEmailValid && typedUsername) Text("Логин должен содержать от 5 до 50 символов") },
-                    shape = MaterialTheme.shapes.medium
+                    errorText = if (!isEmailValid && typedUsername) "Логин должен содержать от 5 до 50 символов" else null,
                 )
                 val isPasswordValid =
                     remember(registerDTO.password.length) { (registerDTO.password.length in 8..255) }
                 var typedPassword by remember { mutableStateOf(false) }
-                OutlinedTextField(
+                MyTextField(
                     registerDTO.password,
-                    label = { Text("Пароль") },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = "Пароль",
                     enabled = !loading,
                     visualTransformation = PasswordVisualTransformation(),
                     onValueChange = {
@@ -133,17 +153,23 @@ fun AuthPage(modifier: Modifier, onLogin: (LoginDto) -> Unit, onRegister: (Regis
                     },
                     singleLine = true,
                     isError = !isPasswordValid && typedPassword,
-                    supportingText = { if (!isPasswordValid && typedPassword) Text("Пароль должен содержать от 8 до 50 символов") },
-                    shape = MaterialTheme.shapes.medium
+                    errorText = if (!isPasswordValid && typedPassword) "Пароль должен содержать от 8 до 50 символов" else null,
                 )
-                if (!loading) Button(onClick = {
-                    onRegister(registerDTO)
-                    loading = true
-                }, enabled = !loading && isEmailValid && isPasswordValid) {
-                    Text("Зарегистрироваться")
-                } else CircularProgressIndicator()
-                TextButton(onClick = { hasAccount = true }, enabled = !loading) {
-                    Text("Вход")
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    TextButton(
+                        onClick = { hasAccount = true }, enabled = !loading,
+                        shape = MaterialTheme.shapes.small
+                    ) {
+                        Text("Вход")
+                    }
+                    if (!loading) MyButton(
+                        text = "Зарегистрироваться",
+                        onClick = {
+                            onRegister(registerDTO)
+                            loading = true
+                        },
+                        enabled = !loading && isEmailValid && isPasswordValid,
+                    ) else CircularProgressIndicator()
                 }
             }
         }
