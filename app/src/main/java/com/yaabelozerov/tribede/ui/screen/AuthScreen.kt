@@ -34,8 +34,8 @@ import com.yaabelozerov.tribede.ui.viewmodels.AuthViewModel
 
 @Composable
 fun AuthScreen(
-    vm: AuthViewModel = viewModel(),
     modifier: Modifier = Modifier,
+    vm: AuthViewModel = viewModel(),
 ) {
     var hasAccount by remember { mutableStateOf(true) }
     var loading by remember { mutableStateOf(false) }
@@ -100,17 +100,17 @@ fun AuthScreen(
                     if (!loading) MyButton(
                         text = "Войти",
                         onClick = {
-                            { vm.login(loginDTO)}
+                            vm.login(loginDTO)
                             loading = true
                         },
-                        enabled = !loading && isEmailValid && isPasswordValid,
+                        enabled = isEmailValid && isPasswordValid,
                     ) else CircularProgressIndicator()
                 }
             } else {
                 var registerDTO by remember {
                     mutableStateOf(
                         RegisterDto(
-                            name = "", surname = "", email = "", password = ""
+                            name = "", email = "", password = ""
                         )
                     )
                 }
@@ -120,14 +120,6 @@ fun AuthScreen(
                     enabled = !loading,
                     singleLine = true,
                     onValueChange = { registerDTO = registerDTO.copy(name = it) })
-                MyTextField(
-                    registerDTO.surname,
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = "Фамилия",
-                    enabled = !loading,
-                    singleLine = true,
-                    onValueChange = { registerDTO = registerDTO.copy(surname = it) },
-                )
                 val isEmailValid =
                     remember(registerDTO.email.length) {
                         registerDTO.email.matches(Regex("^[^@]+@[^@]+\\.[^@]+\$"))
@@ -174,10 +166,10 @@ fun AuthScreen(
                     if (!loading) MyButton(
                         text = "Зарегистрироваться",
                         onClick = {
-                            { vm.register(registerDTO) }
+                            vm.register(registerDTO)
                             loading = true
                         },
-                        enabled = !loading && isEmailValid && isPasswordValid,
+                        enabled = isEmailValid && isPasswordValid,
                     ) else CircularProgressIndicator()
                 }
             }

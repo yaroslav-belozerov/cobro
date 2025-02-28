@@ -22,7 +22,7 @@ import kotlinx.serialization.Serializable
 fun App(modifier: Modifier = Modifier) {
     val isAuthenticated by Application.dataStore.getToken().collectAsState(null)
     if (isAuthenticated == "") {
-        AuthScreen(onLogin = {}, onRegister = {})
+        AuthScreen()
     } else if (isAuthenticated != null) {
         LazyColumn(modifier) {
             item {

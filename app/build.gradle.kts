@@ -73,9 +73,4 @@ dependencies {
 
     implementation("com.google.android.gms:play-services-maps:18.1.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")
-
-    val sdkVersion = "12.4.0" // Номер версии SDK
-
-    implementation("ru.dgis.sdk:sdk-map:$sdkVersion") // Укажите sdk-map или sdk-full
-    implementation("ru.dgis.sdk:compose-map:$sdkVersion")
 }
