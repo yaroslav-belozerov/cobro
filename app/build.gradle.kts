@@ -63,4 +63,9 @@ dependencies {
     implementation(libs.coil.network.ktor3)
     implementation(libs.coil.compose)
     implementation(libs.bundles.ktor)
+
+    implementation(libs.androidx.material.icons.extended)
+
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }
