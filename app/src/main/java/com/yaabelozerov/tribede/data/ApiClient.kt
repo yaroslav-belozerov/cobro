@@ -10,22 +10,18 @@ import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.utils.io.InternalAPI
 
-class ApiClient(private val httpClient: HttpClient) {
-  suspend fun login(query: LoginDto): Result<TokenDto> = runCatching {
-    httpClient
-        .post {
-          url("/auth/sign-up")
-          setBody(query)
-        }
-        .body()
-  }
+class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
+    suspend fun login(query: LoginDto): Result<TokenDto> = runCatching {
+        httpClient.post {
+                url("/auth/sign-in")
+                setBody(query)
+            }.body()
+    }
 
-  suspend fun register(query: RegisterDto): Result<TokenDto> = runCatching {
-    httpClient
-        .post {
-          url("/auth/sign-up")
-          setBody(query)
-        }
-        .body()
-  }
+    suspend fun register(query: RegisterDto): Result<TokenDto> = runCatching {
+        httpClient.post {
+                url("/auth/sign-up")
+                setBody(query)
+            }.body()
+    }
 }

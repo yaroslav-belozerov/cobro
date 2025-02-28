@@ -3,8 +3,10 @@ package com.yaabelozerov.tribede.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.ApiClient
 import com.yaabelozerov.tribede.data.DataStore
+import com.yaabelozerov.tribede.data.Net
 import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
 import io.ktor.client.HttpClient
@@ -18,7 +20,7 @@ data class AuthState(
     val error: String? = null
 )
 
-class AuthViewModel(private val api: ApiClient, private val dataStore: DataStore): ViewModel() {
+class AuthViewModel(private val api: ApiClient = ApiClient(), private val dataStore: DataStore = Application.dataStore): ViewModel() {
     private val _state = MutableStateFlow(AuthState())
     val state = _state.asStateFlow()
 
@@ -45,9 +47,9 @@ class AuthViewModel(private val api: ApiClient, private val dataStore: DataStore
                     dataStore.saveToken(it.token)
                 }
             } else {
+                result.exceptionOrNull()?.let { it.printStackTrace() }
                 _state.update { it.copy(error = "Что-то пошло не так") }
             }
         }
     }
-
 }
