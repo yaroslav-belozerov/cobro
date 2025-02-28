@@ -39,7 +39,9 @@ fun AuthScreen(
     var loading by remember { mutableStateOf(false) }
     Crossfade(hasAccount) { acc ->
         Column(
-            modifier = modifier.fillMaxSize().padding(24.dp),
+            modifier = modifier
+                .fillMaxSize()
+                .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
         ) {
             Text(
@@ -50,8 +52,9 @@ fun AuthScreen(
             )
             if (acc) {
                 var loginDTO by remember { mutableStateOf(LoginDto("", "")) }
-                val isEmailValid =
-                    remember(loginDTO.email.length) { (loginDTO.email.length in 5..50) }
+                val isEmailValid = remember(loginDTO.email.length) {
+                    loginDTO.email.matches(Regex("^[^@]+@[^@]+\\.[^@]+\$"))
+                }
                 var typedUsername by remember { mutableStateOf(false) }
                 MyTextField(
                     loginDTO.email,
@@ -123,7 +126,9 @@ fun AuthScreen(
                     onValueChange = { registerDTO = registerDTO.copy(surname = it) },
                 )
                 val isEmailValid =
-                    remember(registerDTO.email.length) { (registerDTO.email.length in 5..50) }
+                    remember(registerDTO.email.length) {
+                        registerDTO.email.matches(Regex("^[^@]+@[^@]+\\.[^@]+\$"))
+                    }
                 var typedUsername by remember { mutableStateOf(false) }
                 MyTextField(
                     registerDTO.email,
@@ -157,7 +162,8 @@ fun AuthScreen(
                 )
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     TextButton(
-                        onClick = { hasAccount = true }, enabled = !loading,
+                        onClick = { hasAccount = true },
+                        enabled = !loading,
                         shape = MaterialTheme.shapes.small
                     ) {
                         Text("Вход")
