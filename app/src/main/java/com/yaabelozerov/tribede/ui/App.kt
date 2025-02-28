@@ -17,7 +17,6 @@ import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.DataStore
 import com.yaabelozerov.tribede.ui.screen.AuthScreen
 import kotlinx.serialization.Serializable
-import org.koin.compose.koinInject
 
 @Composable
 fun App(modifier: Modifier = Modifier) {
