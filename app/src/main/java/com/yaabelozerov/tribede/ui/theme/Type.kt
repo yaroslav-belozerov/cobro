@@ -20,11 +20,11 @@ private val bodyFontFamily =
 
 private val displayFontFamily =
     FontFamily(
-        Font(R.font.wix_madefor_display_bold, weight = FontWeight.Bold, style = FontStyle.Normal),
-        Font(R.font.wix_madefor_display_extrabold, weight = FontWeight.ExtraBold, style = FontStyle.Normal),
-        Font(R.font.wix_madefor_display_medium, weight = FontWeight.Medium, style = FontStyle.Normal),
-        Font(R.font.wix_madefor_display_regular, weight = FontWeight.Normal, style = FontStyle.Normal),
-        Font(R.font.wix_madefor_display_semibold, weight = FontWeight.SemiBold, style = FontStyle.Normal)
+        Font(R.font.geologica_bold, weight = FontWeight.Bold, style = FontStyle.Normal),
+        Font(R.font.geologica_extrabold, weight = FontWeight.ExtraBold, style = FontStyle.Normal),
+        Font(R.font.geologica_medium, weight = FontWeight.Medium, style = FontStyle.Normal),
+        Font(R.font.geologica_regular, weight = FontWeight.Normal, style = FontStyle.Normal),
+        Font(R.font.commissioner_semibold, weight = FontWeight.SemiBold, style = FontStyle.Normal)
     )
 
 val AppTypography = Typography(
