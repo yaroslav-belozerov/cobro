@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yaabelozerov.tribede.data.ApiClient
+import com.yaabelozerov.tribede.data.DataStore
 import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
 import io.ktor.client.HttpClient
@@ -17,7 +18,7 @@ data class AuthState(
     val error: String? = null
 )
 
-class AuthViewModel(private val api: ApiClient): ViewModel() {
+class AuthViewModel(private val api: ApiClient, private val dataStore: DataStore): ViewModel() {
     private val _state = MutableStateFlow(AuthState())
     val state = _state.asStateFlow()
 
@@ -25,9 +26,12 @@ class AuthViewModel(private val api: ApiClient): ViewModel() {
         viewModelScope.launch {
             val result = api.login(dto)
             if (result.isSuccess) {
+                _state.update { it.copy(error = null) }
                 result.getOrNull()?.let {
-                    _state.update { it.copy(token = it.token) }
+                    dataStore.saveToken(it.token)
                 }
+            } else {
+                _state.update { it.copy(error = "Что-то пошло не так") }
             }
         }
     }
@@ -36,8 +40,12 @@ class AuthViewModel(private val api: ApiClient): ViewModel() {
         viewModelScope.launch {
             val result = api.register(dto)
             if (result.isSuccess) {
-                val token = result.getOrNull()!!.token
-                _state.update { it.copy(token = token) }
+                _state.update { it.copy(error = null) }
+                result.getOrNull()?.let {
+                    dataStore.saveToken(it.token)
+                }
+            } else {
+                _state.update { it.copy(error = "Что-то пошло не так") }
             }
         }
     }
