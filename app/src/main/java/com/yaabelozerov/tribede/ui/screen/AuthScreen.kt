@@ -14,6 +14,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,20 +25,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
 import com.yaabelozerov.tribede.ui.components.MyButton
 import com.yaabelozerov.tribede.ui.components.MyTextField
+import com.yaabelozerov.tribede.ui.viewmodels.AuthViewModel
 
 @Composable
 fun AuthScreen(
-    onLogin: (LoginDto) -> Unit,
-    onRegister: (RegisterDto) -> Unit,
     modifier: Modifier = Modifier,
+    vm: AuthViewModel = viewModel(),
 ) {
     var hasAccount by remember { mutableStateOf(true) }
     var loading by remember { mutableStateOf(false) }
     Crossfade(hasAccount) { acc ->
+        val state = vm.state.collectAsState().value
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -97,17 +100,17 @@ fun AuthScreen(
                     if (!loading) MyButton(
                         text = "Войти",
                         onClick = {
-                            onLogin(loginDTO)
+                            vm.login(loginDTO)
                             loading = true
                         },
-                        enabled = !loading && isEmailValid && isPasswordValid,
+                        enabled = isEmailValid && isPasswordValid,
                     ) else CircularProgressIndicator()
                 }
             } else {
                 var registerDTO by remember {
                     mutableStateOf(
                         RegisterDto(
-                            name = "", surname = "", email = "", password = ""
+                            name = "", email = "", password = ""
                         )
                     )
                 }
@@ -117,14 +120,6 @@ fun AuthScreen(
                     enabled = !loading,
                     singleLine = true,
                     onValueChange = { registerDTO = registerDTO.copy(name = it) })
-                MyTextField(
-                    registerDTO.surname,
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = "Фамилия",
-                    enabled = !loading,
-                    singleLine = true,
-                    onValueChange = { registerDTO = registerDTO.copy(surname = it) },
-                )
                 val isEmailValid =
                     remember(registerDTO.email.length) {
                         registerDTO.email.matches(Regex("^[^@]+@[^@]+\\.[^@]+\$"))
@@ -171,13 +166,16 @@ fun AuthScreen(
                     if (!loading) MyButton(
                         text = "Зарегистрироваться",
                         onClick = {
-                            onRegister(registerDTO)
+                            vm.register(registerDTO)
                             loading = true
                         },
-                        enabled = !loading && isEmailValid && isPasswordValid,
+                        enabled = isEmailValid && isPasswordValid,
                     ) else CircularProgressIndicator()
                 }
             }
+        }
+        if (state.error != null) {
+            Text(state.error, color = MaterialTheme.colorScheme.error)
         }
     }
 }

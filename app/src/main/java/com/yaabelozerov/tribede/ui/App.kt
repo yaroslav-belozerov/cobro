@@ -12,13 +12,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.ui.screen.AuthScreen
+import kotlinx.serialization.Serializable
 
 @Composable
 fun App(modifier: Modifier = Modifier) {
     val isAuthenticated by Application.dataStore.getToken().collectAsState(null)
     val navCtrl = rememberNavController()
     if (isAuthenticated == "") {
-        AuthScreen(onLogin = { navCtrl.navigate("reservations") }, onRegister = { navCtrl.navigate("reservations") })
+        AuthScreen()
     } else if (isAuthenticated != null) {
         NavHost(navCtrl, startDestination = "reservations") {
             composable("reservations") {
