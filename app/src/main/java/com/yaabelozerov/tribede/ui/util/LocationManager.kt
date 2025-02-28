@@ -6,9 +6,9 @@ import java.io.IOException
 import java.util.Locale
 
 class LocationManager(
-    context: Context
+    private val context: Context
 ) {
-    fun getLocationFromAddress(address: String, context: Context) {
+    fun getLocationFromAddress(address: String) {
         val geocoder = Geocoder(context, Locale.getDefault())
         try {
             val addresses = geocoder.getFromLocationName(address, 1)
