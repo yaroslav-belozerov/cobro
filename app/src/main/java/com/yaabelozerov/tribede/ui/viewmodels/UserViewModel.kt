@@ -37,8 +37,13 @@ class UserViewModel(
                         _state.update { state ->
                             state.copy(user = it)
                         }
+                    } ?: result.exceptionOrNull()?.let {
+                        it.printStackTrace()
+                        Application.dataStore.apply {
+                            saveToken("")
+                            saveIsAdmin(false)
+                        }
                     }
-                    result.exceptionOrNull()?.printStackTrace()
                 }
             }
         }

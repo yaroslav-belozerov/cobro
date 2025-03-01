@@ -74,13 +74,11 @@ private val colors = listOf(
 )
 
 @Composable
-fun ReservationMap(list: List<CoworkingSpace>) {
+fun ReservationMap(id: String, setId: (String) -> Unit, list: List<CoworkingSpace>) {
     val bgColor = MaterialTheme.colorScheme.onBackground
     var width by remember { mutableIntStateOf(0) }
     var height by remember { mutableIntStateOf(0) }
-    var chosenId by remember { mutableStateOf("") }
-    Box(
-    ) {
+    Box{
         Canvas(Modifier
             .fillMaxWidth()
             .padding(12.dp)
@@ -96,7 +94,7 @@ fun ReservationMap(list: List<CoworkingSpace>) {
                     println("$x, $y")
                     list.forEachIndexed { index, it ->
                         if (it.position.x <= x && x <= (it.position.width + it.position.x) && it.position.y <= y && y <= (it.position.height + it.position.y)) {
-                            chosenId = (if (it.id == chosenId) "" else it.id)
+                            setId(if (it.id == id) "" else it.id)
                             println("clicked $index")
                         }
                     }
@@ -112,7 +110,7 @@ fun ReservationMap(list: List<CoworkingSpace>) {
                         width = (it.position.width - 0.01f) * width, height = (it.position.height - 0.01f) * height
                     )
                 )
-                if (it.id == chosenId) {
+                if (it.id == id) {
                     println("chosen ${it.id}")
                     drawRoundRect(
                         bgColor,
@@ -141,7 +139,7 @@ fun ReservationMap(list: List<CoworkingSpace>) {
 @Preview
 @Composable
 fun ReservationMapPreview() {
-    ReservationMap(
+    val lst =
         listOf(
             CoworkingSpace(
                 id = "0",
@@ -284,5 +282,8 @@ fun ReservationMapPreview() {
                 isCompanyRestricted = false
             ),
         )
+    var id by remember { mutableStateOf("") }
+    ReservationMap(
+       id, { id = it }, lst
     )
 }

@@ -8,6 +8,7 @@ import com.yaabelozerov.tribede.data.DataStore
 import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
 import com.yaabelozerov.tribede.data.model.UserRole
+import io.ktor.client.plugins.ClientRequestException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -17,10 +18,13 @@ data class AuthState(
     val token: String = "",
     val error: String? = null,
     val isLoading: Boolean = false,
-    val displayAdminChoice: Boolean = false
+    val displayAdminChoice: Boolean = false,
 )
 
-class AuthViewModel(private val api: ApiClient = ApiClient(), private val dataStore: DataStore = Application.dataStore): ViewModel() {
+class AuthViewModel(
+    private val api: ApiClient = ApiClient(),
+    private val dataStore: DataStore = Application.dataStore,
+) : ViewModel() {
     private val _state = MutableStateFlow(AuthState())
     val state = _state.asStateFlow()
 
@@ -37,8 +41,14 @@ class AuthViewModel(private val api: ApiClient = ApiClient(), private val dataSt
                     dataStore.saveToken(it.token)
                     _state.update { it.copy(error = null) }
                 }
-            } ?: _state.update { it.copy(error = "Что-то пошло не так") }
-            result.exceptionOrNull()?.printStackTrace()
+            }
+            result.exceptionOrNull()?.let {
+                it.printStackTrace()
+                when (it) {
+                    is ClientRequestException -> _state.update { it.copy(error = "Неправильный логин или пароль") }
+                    else -> _state.update { it.copy(error = "Что-то пошло не так") }
+                }
+            }
             _state.update { it.copy(isLoading = false) }
         }
     }
