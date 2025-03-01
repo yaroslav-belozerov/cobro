@@ -10,7 +10,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 data class NavIcon(val selectedIcon: ImageVector, val unselectedIcon: ImageVector)
 
 enum class Nav(val route: String, val icon: NavIcon?) {
-    AUTH("auth", null),
     BOOK("book", NavIcon(selectedIcon = Icons.Filled.Home, unselectedIcon = Icons.Outlined.Home)),
     USER("user", NavIcon(selectedIcon = Icons.Filled.Person, unselectedIcon = Icons.Outlined.Person)),
 }

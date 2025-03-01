@@ -14,11 +14,14 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.yaabelozerov.tribede.ui.App
+import com.yaabelozerov.tribede.ui.screen.AuthScreen
 import com.yaabelozerov.tribede.ui.theme.AppTheme
 import com.yaabelozerov.tribede.ui.util.Nav
 import com.yaabelozerov.tribede.ui.viewmodels.AuthViewModel
@@ -31,15 +34,18 @@ class MainActivity : ComponentActivity() {
         val authVM = AuthViewModel(Application.apiClient, Application.dataStore)
 
         setContent {
+            val token by Application.dataStore.getToken().collectAsState(null)
             val navCtrl = rememberNavController()
             val current =
                 Nav.entries.find { navCtrl.currentBackStackEntryAsState().value?.destination?.route == it.route }
 
             AppTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    bottomBar = {
-                        if (navCtrl.currentBackStackEntry?.destination?.route != Nav.AUTH.route) {
+                if (token == "") {
+                    AuthScreen()
+                } else if (token != null) {
+                    Scaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        bottomBar = {
                             BottomAppBar {
                                 Nav.entries.forEach {
                                     val selected = it == current
@@ -60,10 +66,9 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
-
+                    ) { innerPadding ->
+                        App(Modifier.padding(innerPadding).windowInsetsPadding(WindowInsets.ime), navCtrl)
                     }
-                ) { innerPadding ->
-                    App(Modifier.padding(innerPadding).windowInsetsPadding(WindowInsets.ime), navCtrl)
                 }
             }
         }

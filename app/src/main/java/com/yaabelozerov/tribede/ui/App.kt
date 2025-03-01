@@ -21,21 +21,16 @@ import kotlinx.serialization.Serializable
 
 @Composable
 fun App(modifier: Modifier = Modifier, navCtrl: NavHostController) {
-    val isAuthenticated by Application.dataStore.getToken().collectAsState(null)
-    if (isAuthenticated == "") {
-        AuthScreen()
-    } else if (isAuthenticated != null) {
-        NavHost(navCtrl, startDestination = "user") {
-            composable(Nav.BOOK.route) {
-                LazyColumn(modifier) {
-                    item {
-                        ReservationMapPreview()
-                    }
+    NavHost(navCtrl, startDestination = "user") {
+        composable(Nav.BOOK.route) {
+            LazyColumn(modifier) {
+                item {
+                    ReservationMapPreview()
                 }
             }
-            composable(Nav.USER.route) {
-                UserScreen()
-            }
+        }
+        composable(Nav.USER.route) {
+            UserScreen(modifier)
         }
     }
 }
