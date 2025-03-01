@@ -34,12 +34,14 @@ class AuthViewModel(private val api: ApiClient = ApiClient(), private val dataSt
                 }
             } else {
                 _state.update { it.copy(error = "Что-то пошло не так") }
+                result.exceptionOrNull()?.printStackTrace()
             }
         }
     }
 
     fun register(dto: RegisterDto) {
         viewModelScope.launch {
+            println(dto)
             val result = api.register(dto)
             if (result.isSuccess) {
                 _state.update { it.copy(error = null) }
@@ -47,7 +49,7 @@ class AuthViewModel(private val api: ApiClient = ApiClient(), private val dataSt
                     dataStore.saveToken(it.token)
                 }
             } else {
-                result.exceptionOrNull()?.let { it.printStackTrace() }
+                result.exceptionOrNull()?.printStackTrace()
                 _state.update { it.copy(error = "Что-то пошло не так") }
             }
         }
