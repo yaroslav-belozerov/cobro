@@ -44,5 +44,5 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
         }.body()
     }
 
-    suspend fun getBookings()
+    suspend fun getBookings() = kotlin.runCatching {  }
 }
