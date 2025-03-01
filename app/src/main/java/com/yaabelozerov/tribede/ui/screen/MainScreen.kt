@@ -1,5 +1,6 @@
 package com.yaabelozerov.tribede.ui.screen
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -33,42 +34,38 @@ import com.yaabelozerov.tribede.ui.viewmodels.MainViewModel
 @Composable
 fun MainScreen(vm: MainViewModel = viewModel()) {
     val state by vm.state.collectAsState()
-    var chosenBookingId by remember { mutableStateOf(state.zones.firstOrNull()?.id) }
-    var visible by remember { mutableStateOf(false) }
-    Column(modifier = Modifier.padding(horizontal = 12.dp), horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceAround) {
-        Spacer(Modifier.size(24.dp))
-        Text("Забронировать", style = MaterialTheme.typography.headlineMedium)
+    state.zones.takeIf { it.isNotEmpty() }?.let { zones ->
+        var chosenBook by remember { mutableStateOf(zones.first()) }
+        var expanded by remember { mutableStateOf(false) }
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceAround
+        ) {
+            Spacer(Modifier.size(24.dp))
+            Text("Забронировать", style = MaterialTheme.typography.headlineMedium)
             Column {
-                ReservationMap(chosenBookingId ?: "", {
-                    visible = it.isNotEmpty(); if (it.isNotEmpty()) {
-                    chosenBookingId = if (it == chosenBookingId) {
-                        ""
+                ReservationMap(if (expanded) chosenBook else null, {
+                    if (chosenBook == it) {
+                        expanded = !expanded
                     } else {
-                        it
+                        chosenBook = it
+                        expanded = true
                     }
-                }
-                }, state.zones.map { it.toSpace() })
-                AnimatedVisibility(visible,
-                    enter = fadeIn() + slideInVertically( initialOffsetY = { it / 2 }),
-                    exit = fadeOut() + slideOutVertically()
+                }, zones)
+                AnimatedVisibility(
+                    expanded,
+                    enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
+                    exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 2 })
                 ) {
                     Column {
-                        state.zones.find { it.id == chosenBookingId }?.let {
-                            Text(it.name, style = MaterialTheme.typography.titleLarge)
-                            Text(it.description)
-                            Text("0 / ${it.capacity}")
-                            Timeline(emptyList())
-                        }
-
+                        Text(chosenBook.name, style = MaterialTheme.typography.titleLarge)
+                        Text(chosenBook.description)
+                        Text("0 / ${chosenBook.maxPeople}")
+                        Timeline(emptyList())
                     }
                 }
             }
-
-
-            val datePickerState = rememberDateRangePickerState()
-//            DateRangePicker(datePickerState)
-
-
+        }
     }
 }

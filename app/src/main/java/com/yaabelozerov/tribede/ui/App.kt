@@ -11,7 +11,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.yaabelozerov.tribede.data.model.UserRole
 import com.yaabelozerov.tribede.ui.components.ReservationMap
-import com.yaabelozerov.tribede.ui.components.ReservationMapPreview
 import com.yaabelozerov.tribede.ui.screen.MainScreen
 import com.yaabelozerov.tribede.ui.screen.UserScreen
 import com.yaabelozerov.tribede.ui.util.Nav

@@ -6,8 +6,10 @@ import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.ApiClient
 import com.yaabelozerov.tribede.data.model.BookResponseDTO
 import com.yaabelozerov.tribede.data.model.ZoneDto
-import com.yaabelozerov.tribede.data.model.toDomainModel
 import com.yaabelozerov.tribede.domain.model.BookingUI
+import com.yaabelozerov.tribede.ui.components.CoworkingSpace
+import com.yaabelozerov.tribede.data.model.toDomainModel
+import com.yaabelozerov.tribede.ui.components.toSpace
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -15,7 +17,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class MainState(
-    val zones: List<ZoneDto> = emptyList(),
+    val zones: List<CoworkingSpace> = emptyList(),
     val currentBookings: List<BookingUI> = emptyList()
 )
 
@@ -33,7 +35,7 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
                 val result = api.getZones(token)
                 result.getOrNull()?.let {
                     _state.update { state ->
-                        state.copy(zones = it)
+                        state.copy(zones = it.map { it.toSpace() })
                     }
                 }
                 result.exceptionOrNull()?.printStackTrace()
