@@ -7,13 +7,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.yaabelozerov.tribede.data.model.UserRole
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
 
 @Composable
-fun UserScreen(vm: UserViewModel = viewModel()) {
+fun UserScreen(vm: UserViewModel) {
     val uiState by vm.state.collectAsState()
-    Column {
-        Text(uiState.name)
-        Text(uiState.email)
+    uiState.user?.let { userInfo ->
+        Column {
+            Text(userInfo.name)
+            Text(userInfo.email)
+            Text(UserRole.entries[userInfo.role].name)
+        }
     }
 }

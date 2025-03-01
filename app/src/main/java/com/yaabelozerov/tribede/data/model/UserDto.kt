@@ -9,13 +9,11 @@ data class UserDto(
     val email: String,
     val city: String?,
     val books: List<Book>?,
-    val role: UserRole
+    val role: Int
 )
 
 enum class UserRole {
-    REGULAR,
-    INTERNAL,
-    ADMIN
+    ADMIN, CLIENT, INTERNAL
 }
 
 @Serializable
@@ -27,7 +25,7 @@ data class Book(
     val userId: String,
     val user: String,
     val description: String,
-    val status: BookStatus,
+    val status: Int,
 )
 
 enum class BookStatus {
