@@ -13,7 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.yaabelozerov.tribede.Application
-import com.yaabelozerov.tribede.ui.components.ReservationMapPreview
+import com.yaabelozerov.tribede.ui.components.ReservationMapScreen
 import com.yaabelozerov.tribede.ui.screen.AuthScreen
 import com.yaabelozerov.tribede.ui.screen.UserScreen
 import com.yaabelozerov.tribede.ui.util.Nav
@@ -21,13 +21,9 @@ import kotlinx.serialization.Serializable
 
 @Composable
 fun App(modifier: Modifier = Modifier, navCtrl: NavHostController) {
-    NavHost(navCtrl, startDestination = Nav.USER.route) {
+    NavHost(navCtrl, startDestination = Nav.BOOK.route, modifier = modifier) {
         composable(Nav.BOOK.route) {
-            LazyColumn(modifier) {
-                item {
-                    ReservationMapPreview()
-                }
-            }
+            ReservationMapScreen()
         }
         composable(Nav.USER.route) {
             UserScreen()
