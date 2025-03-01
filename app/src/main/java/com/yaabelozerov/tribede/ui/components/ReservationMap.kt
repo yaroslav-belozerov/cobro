@@ -242,12 +242,12 @@ fun ReservationMapPreview() {
                 seats = listOf(
                     Seat(17, Pos(0.465f, 0.135f, 0.30f, 0.20f)),
                     Seat(18, Pos(0.530f, 0.135f, 0.30f, 0.20f)),
-                    Seat(19, Pos(0.605f, 0.135f, 0.30f, 0.20f)),
-                    Seat(20, Pos(0.675f, 0.135f, 0.30f, 0.20f)),
+                    Seat(19, Pos(0.600f, 0.135f, 0.30f, 0.20f)),
+                    Seat(20, Pos(0.665f, 0.135f, 0.30f, 0.20f)),
                 ),
                 type = SpaceType.OFFICE,
                 color = Color(0xFFCCDBDC),
-                position = Pos(0.43f, 0.10f, 0.28f, 0.20f),
+                position = Pos(0.43f, 0.10f, 0.27f, 0.20f),
                 tags = listOf("tag1", "tag2"),
                 isCompanyRestricted = false
             ),
