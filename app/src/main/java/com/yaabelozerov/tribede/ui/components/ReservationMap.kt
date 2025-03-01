@@ -41,6 +41,7 @@ data class Seat(
 fun ZoneDto.toSpace(): CoworkingSpace {
     val spaceType = SpaceType.entries.find { it.name.lowercase() == type.lowercase() } ?: SpaceType.MISC
     return CoworkingSpace(
+
         id = id,
         name = name,
         currentPeople = 0,
@@ -81,7 +82,6 @@ fun ReservationMap(chosenId: String, onSetId: (String) -> Unit, list: List<Cowor
     Box {
         Canvas(Modifier
             .fillMaxWidth()
-            .padding(12.dp)
             .aspectRatio(1f)
             .onPlaced {
                 width = it.size.width

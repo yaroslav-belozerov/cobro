@@ -43,4 +43,6 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
             header("Authorization", "Bearer $token")
         }.body()
     }
+
+    suspend fun getBookings()
 }

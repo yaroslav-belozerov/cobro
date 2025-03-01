@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
                                         authVm.closeAdminChoice()
                                     }
                                 }, shape = MaterialTheme.shapes.small) {
-                                    Text("Войти как администратор")
+                                    Text("Войти как папочка")
                                 }
                             }
                         }
