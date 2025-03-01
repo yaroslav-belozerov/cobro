@@ -1,5 +1,6 @@
 package com.yaabelozerov.tribede.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yaabelozerov.tribede.Application
@@ -13,12 +14,14 @@ import com.yaabelozerov.tribede.ui.components.toSpace
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class MainState(
     val zones: List<CoworkingSpace> = emptyList(),
     val currentBookings: List<BookingUI> = emptyList()
+
 )
 
 class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
@@ -45,12 +48,13 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
 
     fun getBookings(zoneId: String, seatId: String?) {
         viewModelScope.launch {
-            Application.dataStore.getToken().distinctUntilChanged().collect { token ->
+            Application.dataStore.getToken().first().let { token ->
                 val result = api.getBookings(token, zoneId, seatId)
                 result.getOrNull()?.let {
                     _state.update { state ->
                         state.copy(currentBookings = it.map { it.toDomainModel() })
                     }
+                    Log.d("getBook", "getBookings: $it")
                 }
                 result.exceptionOrNull()?.printStackTrace()
             }

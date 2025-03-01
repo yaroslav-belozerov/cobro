@@ -1,5 +1,6 @@
 package com.yaabelozerov.tribede.data
 
+import android.util.Log
 import com.yaabelozerov.tribede.data.model.BookResponseDTO
 import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
@@ -48,9 +49,8 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
 
     suspend fun getBookings(token: String, id: String, seatId: String?): Result<List<BookResponseDTO>> = runCatching {
         httpClient.get {
-            url("/book")
+            url("/book/$id")
             header("Authorization", "Bearer $token")
-            parameter("id", id)
             seatId?.let {
                 parameter("seatId", it)
             }

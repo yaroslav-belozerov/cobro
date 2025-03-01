@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -84,6 +85,7 @@ fun ReservationMap(
     Box {
         Canvas(Modifier
             .fillMaxWidth()
+            .padding(horizontal = 12.dp)
             .aspectRatio(1f)
             .onPlaced {
                 width = it.size.width
@@ -131,7 +133,7 @@ fun ReservationMap(
                             color = Color.Blue,
                             center = Offset(seat.position.x * width, seat.position.y * height),
                             radius = 5.dp.toPx()
-                        )
+                        ) // TODO хули не грузятся
                     }
                 }
             }

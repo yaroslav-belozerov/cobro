@@ -25,6 +25,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.yaabelozerov.tribede.domain.model.BookStatus
+import com.yaabelozerov.tribede.domain.model.BookingUI
 
 data class Booking(
     val startTime: Int, // Время начала бронирования (в миллисекундах)
@@ -34,16 +36,14 @@ data class Booking(
 
 @Composable
 fun Timeline(
-    bookings: List<Booking>,
+    bookings: List<BookingUI>,
     startHour: Int = 9, // Начало рабочего дня (9:00)
     endHour: Int = 18, // Конец рабочего дня (18:00)
 ) {
     val totalMinutes = (endHour - startHour) * 60
     val minuteWidth =
         (LocalConfiguration.current.screenWidthDp.toFloat() - 16) / totalMinutes.toFloat()
-    Log.d("timeline", "current: ${LocalConfiguration.current.screenWidthDp}")
-    Log.d("timeline", "Timeline: minuteWidth: $minuteWidth, totalMinutes: $totalMinutes")
-
+    Log.d("timeline", "bookings: $bookings")
     Column {
         Box(
             modifier = Modifier
@@ -63,17 +63,17 @@ fun Timeline(
 
             // Отображение бронирований
             bookings.forEach { booking ->
-                val startOffset = ((booking.startTime - startHour * 60) * minuteWidth)
-                val endOffset = ((booking.endTime - startHour * 60) * minuteWidth)
-                Log.d("timeline", "startOffset: $startOffset, endOffset: $endOffset")
-
+                val startOffset = ((booking.start.hour - startHour) * 60 ) * minuteWidth
+                val endOffset = ((booking.end.hour - startHour) * 60) * minuteWidth
+                Log.d("timeline 2", "startOffset: $startOffset, endOffset: $endOffset")
+// TODO timezone fix надо
                 Box(
                     modifier = Modifier
                         .offset(x = startOffset.dp, y = 10.dp)
                         .width((endOffset - startOffset).dp)
                         .height(30.dp)
                         .clip(shape = RoundedCornerShape(3.dp))
-                        .background(if (booking.isBooked) Color.Red else Color.Green),
+                        .background(if (booking.status == BookStatus.ACTIVE) Color.Green else Color.Red),
 
                     )
             }
@@ -106,14 +106,3 @@ fun Timeline(
 
 }
 
-@Preview
-@Composable
-fun TimeLinePreview() {
-    Timeline(
-        listOf(
-            Booking(startTime = 9 * 60, endTime = 10 * 60, isBooked = true),
-            Booking(startTime = 10 * 60, endTime = 12 * 60, isBooked = false),
-            Booking(startTime = 14 * 60, endTime = 16 * 60, isBooked = true)
-        )
-    )
-}
