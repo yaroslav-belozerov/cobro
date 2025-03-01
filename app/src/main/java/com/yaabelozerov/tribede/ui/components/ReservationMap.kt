@@ -29,6 +29,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.yaabelozerov.tribede.data.model.UserDto
 import com.yaabelozerov.tribede.data.model.UserRole
 
 data class CoworkingPlace(
@@ -131,19 +132,25 @@ private fun ReservationMapPreview() {
 }
 
 @Composable
-fun ReservationMapScreen(role: UserRole) {
+fun ReservationMapScreen(user: UserDto) {
+    val role = user.role.let { UserRole.entries.getOrNull(it) }
     LazyColumn {
         item {
-            Text("Добро пожаловать, уважаемый ${
-                when (role) {
-                    UserRole.ADMIN -> "администратор"
-                    UserRole.CLIENT -> "клиент"
-                    UserRole.INTERNAL -> "сотрудник"
-                }
-            }", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(12.dp))
+            role?.let {
+                Text("Добро пожаловать, уважаемый ${
+                    when (it) {
+                        UserRole.ADMIN -> "администратор"
+                        UserRole.CLIENT -> "клиент"
+                        UserRole.INTERNAL -> "сотрудник"
+                    }
+                }", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(12.dp))
+            }
         }
         item {
             ReservationMapPreview()
+            user.books?.forEach {
+                Text("${it.start} ${it.end}")
+            }
         }
     }
 }
