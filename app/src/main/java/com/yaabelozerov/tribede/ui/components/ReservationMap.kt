@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -24,26 +25,35 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.yaabelozerov.tribede.data.model.ZoneDto
 
 enum class SpaceType {
     OFFICE, TALKROOM, OPEN, MISC
 }
-
-data class CoworkingPlace(
-    val name: String,
-    val spaces: List<CoworkingSpace>,
-)
 
 data class Seat(
     val id: Long,
     val position: Pos,
 )
 
+fun ZoneDto.toSpace() =
+    CoworkingSpace(
+        id = id,
+        name = name,
+        currentPeople = 0,
+        maxPeople = capacity,
+        type = SpaceType.entries.find { it.name.lowercase() == type.lowercase() }!!,
+        color = Color.Red,
+        position = Pos(xCoordinate, yCoordinate, width, height),
+        tags = zoneTags.map { it.tag.toString() },
+        isCompanyRestricted = cls != null
+    )
+
 data class CoworkingSpace(
-    val id: Long,
+    val id: String,
     val name: String,
     val currentPeople: Int,
-    val maxPeople: Int,
+    val maxPeople: Long,
     val type: SpaceType,
     val color: Color,
     val position: Pos,
@@ -68,7 +78,7 @@ fun ReservationMap(list: List<CoworkingSpace>) {
     val bgColor = MaterialTheme.colorScheme.onBackground
     var width by remember { mutableIntStateOf(0) }
     var height by remember { mutableIntStateOf(0) }
-    var chosenId by remember { mutableLongStateOf(-1L) }
+    var chosenId by remember { mutableStateOf("") }
     Box(
     ) {
         Canvas(Modifier
@@ -86,7 +96,7 @@ fun ReservationMap(list: List<CoworkingSpace>) {
                     println("$x, $y")
                     list.forEachIndexed { index, it ->
                         if (it.position.x <= x && x <= (it.position.width + it.position.x) && it.position.y <= y && y <= (it.position.height + it.position.y)) {
-                            chosenId = (if (it.id == chosenId) -1 else it.id)
+                            chosenId = (if (it.id == chosenId) "" else it.id)
                             println("clicked $index")
                         }
                     }
@@ -134,7 +144,7 @@ fun ReservationMapPreview() {
     ReservationMap(
         listOf(
             CoworkingSpace(
-                id = 0,
+                id = "0",
                 name = "Переговорная 1",
                 currentPeople = 0,
                 maxPeople = 6,
@@ -145,7 +155,7 @@ fun ReservationMapPreview() {
                 isCompanyRestricted = false
             ),
             CoworkingSpace(
-                id = 1,
+                id = "1",
                 name = "Переговорная 2",
                 currentPeople = 0,
                 maxPeople = 6,
@@ -156,7 +166,7 @@ fun ReservationMapPreview() {
                 isCompanyRestricted = false
             ),
             CoworkingSpace(
-                id = 2,
+                id = "2",
                 name = "Общее пространство",
                 currentPeople = 2,
                 maxPeople = 4,
@@ -167,7 +177,7 @@ fun ReservationMapPreview() {
                 isCompanyRestricted = false
             ),
             CoworkingSpace(
-                id = 3,
+                id = "3",
                 name = "Офис 1",
                 seats = listOf(
                     Seat(0, Pos(0.865f, 0.335f, 0.14f, 0.14f)),
@@ -184,7 +194,7 @@ fun ReservationMapPreview() {
                 isCompanyRestricted = false
             ),
             CoworkingSpace(
-                id = 4,
+                id = "4",
                 name = "Офис 2",
                 currentPeople = 2,
                 maxPeople = 4,
@@ -201,7 +211,7 @@ fun ReservationMapPreview() {
                 isCompanyRestricted = false
             ),
             CoworkingSpace(
-                id = 5,
+                id = "5",
                 name = "Офис 3",
                 currentPeople = 2,
                 maxPeople = 4,
@@ -218,7 +228,7 @@ fun ReservationMapPreview() {
                 isCompanyRestricted = false
             ),
             CoworkingSpace(
-                id = 6,
+                id = "6",
                 name = "Офис 4",
                 currentPeople = 2,
                 maxPeople = 4,
@@ -235,7 +245,7 @@ fun ReservationMapPreview() {
                 isCompanyRestricted = false
             ),
             CoworkingSpace(
-                id = 7,
+                id = "7",
                 name = "Офис 5",
                 currentPeople = 2,
                 maxPeople = 4,
@@ -252,7 +262,7 @@ fun ReservationMapPreview() {
                 isCompanyRestricted = false
             ),
             CoworkingSpace(
-                id = 8,
+                id = "8",
                 name = "тупняк",
                 currentPeople = 2,
                 maxPeople = 4,
@@ -263,7 +273,7 @@ fun ReservationMapPreview() {
                 isCompanyRestricted = false
             ),
             CoworkingSpace(
-                id = 9,
+                id = "9",
                 name = "общак 2",
                 currentPeople = 2,
                 maxPeople = 4,
