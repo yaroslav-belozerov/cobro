@@ -74,6 +74,7 @@ class MainActivity : ComponentActivity() {
                                 TextButton(onClick = {
                                     scope.launch {
                                         Application.dataStore.saveIsAdmin(true)
+                                        authVm.closeAdminChoice()
                                     }
                                 }, shape = MaterialTheme.shapes.small) {
                                     Text("Войти как администратор")

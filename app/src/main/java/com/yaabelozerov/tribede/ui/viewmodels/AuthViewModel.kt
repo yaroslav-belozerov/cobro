@@ -31,6 +31,7 @@ class AuthViewModel(private val api: ApiClient = ApiClient(), private val dataSt
             result.getOrNull()?.let {
                 val user = api.getUser(it.token).getOrNull() ?: return@let
                 if (user.role == UserRole.ADMIN.ordinal) {
+                    dataStore.saveToken(it.token)
                     _state.update { it.copy(displayAdminChoice = true) }
                 } else {
                     dataStore.saveToken(it.token)
