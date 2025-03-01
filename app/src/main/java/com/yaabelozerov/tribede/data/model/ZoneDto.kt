@@ -15,7 +15,7 @@ data class ZoneDto(
     val width: Float,
     val height: Float,
     val zoneTags: List<ZoneTag>,
-    val type: String
+    val type: String = ""
 )
 
 @Serializable

@@ -1,5 +1,7 @@
 package com.yaabelozerov.tribede.ui.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -8,9 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,18 +38,25 @@ data class Seat(
     val position: Pos,
 )
 
-fun ZoneDto.toSpace() =
-    CoworkingSpace(
+fun ZoneDto.toSpace(): CoworkingSpace {
+    val spaceType = SpaceType.entries.find { it.name.lowercase() == type.lowercase() } ?: SpaceType.MISC
+    return CoworkingSpace(
         id = id,
         name = name,
         currentPeople = 0,
         maxPeople = capacity,
-        type = SpaceType.entries.find { it.name.lowercase() == type.lowercase() }!!,
-        color = Color.Red,
+        type = spaceType,
+        color = when (spaceType) {
+            SpaceType.OFFICE -> Color(android.graphics.Color.parseColor("#CCDBDC"))
+            SpaceType.TALKROOM -> Color(android.graphics.Color.parseColor("#003249"))
+            SpaceType.OPEN -> Color(android.graphics.Color.parseColor("#80CED7"))
+            SpaceType.MISC -> Color(android.graphics.Color.parseColor("#5F6062"))
+        },
         position = Pos(xCoordinate, yCoordinate, width, height),
         tags = zoneTags.map { it.tag.toString() },
         isCompanyRestricted = cls != null
     )
+}
 
 data class CoworkingSpace(
     val id: String,
@@ -64,21 +73,12 @@ data class CoworkingSpace(
 
 data class Pos(val x: Float, val y: Float, val width: Float, val height: Float)
 
-private val colors = listOf(
-    Color.Red.copy(0.3f),
-    Color.Green.copy(0.3f),
-    Color.Blue.copy(0.3f),
-    Color.Yellow.copy(0.3f),
-    Color.Magenta.copy(0.3f),
-    Color.Cyan.copy(0.3f)
-)
-
 @Composable
-fun ReservationMap(id: String, setId: (String) -> Unit, list: List<CoworkingSpace>) {
+fun ReservationMap(chosenId: String, onSetId: (String) -> Unit, list: List<CoworkingSpace>) {
     val bgColor = MaterialTheme.colorScheme.onBackground
     var width by remember { mutableIntStateOf(0) }
     var height by remember { mutableIntStateOf(0) }
-    Box{
+    Box {
         Canvas(Modifier
             .fillMaxWidth()
             .padding(12.dp)
@@ -92,10 +92,9 @@ fun ReservationMap(id: String, setId: (String) -> Unit, list: List<CoworkingSpac
                     val x = offset.x / width
                     val y = offset.y / height
                     println("$x, $y")
-                    list.forEachIndexed { index, it ->
+                    list.forEach {
                         if (it.position.x <= x && x <= (it.position.width + it.position.x) && it.position.y <= y && y <= (it.position.height + it.position.y)) {
-                            setId(if (it.id == id) "" else it.id)
-                            println("clicked $index")
+                            onSetId(if (it.id == chosenId) "" else it.id)
                         }
                     }
                 })
@@ -110,8 +109,7 @@ fun ReservationMap(id: String, setId: (String) -> Unit, list: List<CoworkingSpac
                         width = (it.position.width - 0.01f) * width, height = (it.position.height - 0.01f) * height
                     )
                 )
-                if (it.id == id) {
-                    println("chosen ${it.id}")
+                if (it.id == chosenId) {
                     drawRoundRect(
                         bgColor,
                         style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round),

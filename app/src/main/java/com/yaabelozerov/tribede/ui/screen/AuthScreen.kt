@@ -21,9 +21,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.model.LoginDto
@@ -50,9 +52,11 @@ fun AuthScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
             ) {
                 Text(
-                    "cobro",
-                    style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Black),
-                    modifier = Modifier.padding(bottom = 12.dp)
+                    "cobro", style = MaterialTheme.typography.displayLarge.copy(
+                        fontWeight = FontWeight.Black,
+                        fontSize = 72.sp,
+                        fontStyle = FontStyle.Italic
+                    ), modifier = Modifier.padding(bottom = 12.dp)
                 )
                 if (acc) {
                     var loginDTO by remember { mutableStateOf(LoginDto("", "")) }
@@ -89,8 +93,7 @@ fun AuthScreen(
                         errorText = if (!isPasswordValid) "Пароль должен содержать от 8 до 50 символов" else null,
                     )
                     Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         TextButton(
                             shape = MaterialTheme.shapes.small,
@@ -152,8 +155,7 @@ fun AuthScreen(
                         errorText = if (!isPasswordValid) "Пароль должен содержать от 8 до 50 символов" else null,
                     )
                     Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         TextButton(
                             onClick = { hasAccount = true },

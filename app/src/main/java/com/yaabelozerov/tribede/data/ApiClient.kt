@@ -39,7 +39,7 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
 
     suspend fun getZones(token: String): Result<List<ZoneDto>> = runCatching {
         httpClient.get {
-            url("/zones")
+            url("/zone")
             header("Authorization", "Bearer $token")
         }.body()
     }
