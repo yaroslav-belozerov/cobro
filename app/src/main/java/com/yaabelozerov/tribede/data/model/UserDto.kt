@@ -27,9 +27,3 @@ data class Book(
     val description: String,
     val status: Int,
 )
-
-enum class BookStatus {
-    ACTIVE,
-    INACTIVE,
-    PENDING
-}

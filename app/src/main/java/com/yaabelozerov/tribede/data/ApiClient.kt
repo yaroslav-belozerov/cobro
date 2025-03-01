@@ -1,5 +1,6 @@
 package com.yaabelozerov.tribede.data
 
+import com.yaabelozerov.tribede.data.model.BookResponseDTO
 import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
 import com.yaabelozerov.tribede.data.model.TokenDto
@@ -9,6 +10,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
@@ -44,5 +46,14 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
         }.body()
     }
 
-    suspend fun getBookings() = kotlin.runCatching {  }
+    suspend fun getBookings(token: String, id: String, seatId: String?): Result<List<BookResponseDTO>> = runCatching {
+        httpClient.get {
+            url("/book")
+            header("Authorization", "Bearer $token")
+            parameter("id", id)
+            seatId?.let {
+                parameter("seatId", it)
+            }
+        }.body()
+    }
 }
