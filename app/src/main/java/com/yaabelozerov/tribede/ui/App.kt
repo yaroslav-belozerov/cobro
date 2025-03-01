@@ -21,7 +21,7 @@ import kotlinx.serialization.Serializable
 
 @Composable
 fun App(modifier: Modifier = Modifier, navCtrl: NavHostController) {
-    NavHost(navCtrl, startDestination = "user") {
+    NavHost(navCtrl, startDestination = Nav.USER.route) {
         composable(Nav.BOOK.route) {
             LazyColumn(modifier) {
                 item {
@@ -30,7 +30,7 @@ fun App(modifier: Modifier = Modifier, navCtrl: NavHostController) {
             }
         }
         composable(Nav.USER.route) {
-            UserScreen(modifier)
+            UserScreen()
         }
     }
 }
