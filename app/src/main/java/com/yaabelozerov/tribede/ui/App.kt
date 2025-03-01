@@ -11,7 +11,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.yaabelozerov.tribede.Application
+import com.yaabelozerov.tribede.ui.components.ReservationMapPreview
 import com.yaabelozerov.tribede.ui.screen.AuthScreen
+import com.yaabelozerov.tribede.ui.screen.UserScreen
 import kotlinx.serialization.Serializable
 
 @Composable
@@ -21,12 +23,16 @@ fun App(modifier: Modifier = Modifier) {
     if (isAuthenticated == "") {
         AuthScreen()
     } else if (isAuthenticated != null) {
-        NavHost(navCtrl, startDestination = "reservations") {
+        NavHost(navCtrl, startDestination = "user") {
             composable("reservations") {
                 LazyColumn(modifier) {
                     item {
+                        ReservationMapPreview()
                     }
                 }
+            }
+            composable("user") {
+                UserScreen()
             }
         }
     }

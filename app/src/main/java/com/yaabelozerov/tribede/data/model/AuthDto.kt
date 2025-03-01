@@ -19,3 +19,11 @@ data class RegisterDto(
 data class TokenDto(
     val token: String
 )
+
+@Serializable
+data class UserDto(
+    val id: String,
+    val name: String,
+    val email: String,
+    val city: String?
+)
