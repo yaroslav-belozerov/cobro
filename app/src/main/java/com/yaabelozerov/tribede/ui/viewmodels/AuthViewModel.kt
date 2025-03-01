@@ -2,14 +2,12 @@ package com.yaabelozerov.tribede.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.ApiClient
 import com.yaabelozerov.tribede.data.DataStore
-import com.yaabelozerov.tribede.data.Net
 import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
-import io.ktor.client.HttpClient
+import com.yaabelozerov.tribede.data.model.UserRole
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -17,7 +15,9 @@ import kotlinx.coroutines.launch
 
 data class AuthState(
     val token: String = "",
-    val error: String? = null
+    val error: String? = null,
+    val isLoading: Boolean = false,
+    val displayAdminChoice: Boolean = false
 )
 
 class AuthViewModel(private val api: ApiClient = ApiClient(), private val dataStore: DataStore = Application.dataStore): ViewModel() {
@@ -26,30 +26,37 @@ class AuthViewModel(private val api: ApiClient = ApiClient(), private val dataSt
 
     fun login(dto: LoginDto) {
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
             val result = api.login(dto)
-            if (result.isSuccess) {
-                _state.update { it.copy(error = null) }
-                result.getOrNull()?.let {
+            result.getOrNull()?.let {
+                val user = api.getUser(it.token).getOrNull() ?: return@let
+                if (user.role == UserRole.ADMIN.ordinal) {
+                    _state.update { it.copy(displayAdminChoice = true) }
+                } else {
                     dataStore.saveToken(it.token)
+                    _state.update { it.copy(error = null) }
                 }
-            } else {
-                _state.update { it.copy(error = "Что-то пошло не так") }
-            }
+            } ?: _state.update { it.copy(error = "Что-то пошло не так") }
+            result.exceptionOrNull()?.printStackTrace()
+            _state.update { it.copy(isLoading = false) }
         }
     }
 
     fun register(dto: RegisterDto) {
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
             val result = api.register(dto)
-            if (result.isSuccess) {
+            result.getOrNull()?.let {
                 _state.update { it.copy(error = null) }
-                result.getOrNull()?.let {
-                    dataStore.saveToken(it.token)
-                }
-            } else {
-                result.exceptionOrNull()?.let { it.printStackTrace() }
-                _state.update { it.copy(error = "Что-то пошло не так") }
-            }
+                dataStore.saveToken(it.token)
+            } ?: _state.update { it.copy(error = "Что-то пошло не так") }
+            result.exceptionOrNull()?.printStackTrace()
+            _state.update { it.copy(isLoading = false) }
         }
     }
+
+    fun closeAdminChoice() {
+        _state.update { it.copy(displayAdminChoice = false) }
+    }
+
 }

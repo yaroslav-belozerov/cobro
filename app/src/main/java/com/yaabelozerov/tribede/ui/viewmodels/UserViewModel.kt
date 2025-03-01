@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.ApiClient
 import com.yaabelozerov.tribede.data.DataStore
+import com.yaabelozerov.tribede.data.model.UserDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -13,8 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class UserState(
-    val name: String = "",
-    val email: String = "",
+    val user: UserDto? = null
 )
 
 class UserViewModel(
@@ -35,9 +35,10 @@ class UserViewModel(
                     val result = apiClient.getUser(it)
                     result.getOrNull()?.let {
                         _state.update { state ->
-                            state.copy(name = it.name, email = it.email)
+                            state.copy(user = it)
                         }
                     }
+                    result.exceptionOrNull()?.printStackTrace()
                 }
             }
         }
