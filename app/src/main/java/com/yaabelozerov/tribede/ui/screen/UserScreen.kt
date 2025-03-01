@@ -7,6 +7,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.yaabelozerov.tribede.ui.components.TimeLinePreview
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
 
 @Composable
@@ -15,5 +16,6 @@ fun UserScreen(vm: UserViewModel = viewModel()) {
     Column {
         Text(uiState.name)
         Text(uiState.email)
+        TimeLinePreview()
     }
 }
