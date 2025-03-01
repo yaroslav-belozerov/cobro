@@ -80,7 +80,7 @@ fun MyTextField(
         },
         supportingText = {
             AnimatedVisibility(
-                isError && !isFocused,
+                isError && !isFocused && value.isNotEmpty(),
                 enter = slideInVertically(initialOffsetY = { -it }) + fadeIn() + expandVertically(),
                 exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut() + shrinkVertically()
             ) {
@@ -92,7 +92,7 @@ fun MyTextField(
         singleLine = singleLine,
         placeholder = { Text(placeholder) },
         shape = MaterialTheme.shapes.small,
-        isError = isError && !isFocused,
+        isError = isError && !isFocused && value.isNotEmpty(),
         keyboardActions = KeyboardActions(onAny = { if (!isError) ime?.second?.invoke() }),
         keyboardOptions = KeyboardOptions(
             imeAction = ime?.first ?: ImeAction.Default
