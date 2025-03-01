@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -29,8 +30,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.model.UserDto
 import com.yaabelozerov.tribede.data.model.UserRole
+import kotlinx.coroutines.flow.collectLatest
 
 data class CoworkingPlace(
     val name: String,
@@ -134,12 +137,13 @@ private fun ReservationMapPreview() {
 @Composable
 fun ReservationMapScreen(user: UserDto) {
     val role = user.role.let { UserRole.entries.getOrNull(it) }
+    val isAdmin by Application.dataStore.getIsAdmin().collectAsState(false)
     LazyColumn {
         item {
             role?.let {
                 Text("Добро пожаловать, уважаемый ${
                     when (it) {
-                        UserRole.ADMIN -> "администратор"
+                        UserRole.ADMIN -> if (isAdmin) "администратор" else "клиент"
                         UserRole.CLIENT -> "клиент"
                         UserRole.INTERNAL -> "сотрудник"
                     }

@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,30 +17,31 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
 import com.yaabelozerov.tribede.ui.components.MyButton
 import com.yaabelozerov.tribede.ui.components.MyTextField
 import com.yaabelozerov.tribede.ui.viewmodels.AuthViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun AuthScreen(
+    vm: AuthViewModel,
     modifier: Modifier = Modifier,
-    vm: AuthViewModel = viewModel(),
 ) {
     var hasAccount by remember { mutableStateOf(true) }
-    var loading by remember { mutableStateOf(false) }
+    val state = vm.state.collectAsState().value
     Scaffold { innerPadding ->
         Crossfade(hasAccount) { acc ->
-            val state = vm.state.collectAsState().value
             Column(
                 modifier = modifier
                     .padding(innerPadding)
@@ -65,7 +64,7 @@ fun AuthScreen(
                         loginDTO.email,
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = "E-mail",
-                        enabled = !loading,
+                        enabled = !state.isLoading,
                         onValueChange = {
                             loginDTO = loginDTO.copy(email = it)
                             typedUsername = true
@@ -80,7 +79,7 @@ fun AuthScreen(
                         loginDTO.password,
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = "Пароль",
-                        enabled = !loading,
+                        enabled = !state.isLoading,
                         visualTransformation = PasswordVisualTransformation(),
                         onValueChange = {
                             loginDTO = loginDTO.copy(password = it)
@@ -89,19 +88,21 @@ fun AuthScreen(
                         isError = !isPasswordValid,
                         errorText = if (!isPasswordValid) "Пароль должен содержать от 8 до 50 символов" else null,
                     )
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
                         TextButton(
                             shape = MaterialTheme.shapes.small,
                             onClick = { hasAccount = false },
-                            enabled = !loading
+                            enabled = !state.isLoading
                         ) {
                             Text("Регистрация")
                         }
-                        if (!loading) MyButton(
+                        if (!state.isLoading) MyButton(
                             text = "Войти",
                             onClick = {
                                 vm.login(loginDTO)
-                                loading = true
                             },
                             enabled = isEmailValid && isPasswordValid,
                         ) else CircularProgressIndicator()
@@ -117,18 +118,17 @@ fun AuthScreen(
                     MyTextField(registerDTO.name,
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = "Имя",
-                        enabled = !loading,
+                        enabled = !state.isLoading,
                         singleLine = true,
                         onValueChange = { registerDTO = registerDTO.copy(name = it) })
-                    val isEmailValid =
-                        remember(registerDTO.email.length) {
-                            registerDTO.email.matches(Regex("^[^@]+@[^@]+\\.[^@]+\$"))
-                        }
+                    val isEmailValid = remember(registerDTO.email.length) {
+                        registerDTO.email.matches(Regex("^[^@]+@[^@]+\\.[^@]+\$"))
+                    }
                     MyTextField(
                         registerDTO.email,
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = "E-mail",
-                        enabled = !loading,
+                        enabled = !state.isLoading,
                         onValueChange = {
                             registerDTO = registerDTO.copy(email = it)
                         },
@@ -142,7 +142,7 @@ fun AuthScreen(
                         registerDTO.password,
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = "Пароль",
-                        enabled = !loading,
+                        enabled = !state.isLoading,
                         visualTransformation = PasswordVisualTransformation(),
                         onValueChange = {
                             registerDTO = registerDTO.copy(password = it)
@@ -151,19 +151,21 @@ fun AuthScreen(
                         isError = !isPasswordValid,
                         errorText = if (!isPasswordValid) "Пароль должен содержать от 8 до 50 символов" else null,
                     )
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
                         TextButton(
                             onClick = { hasAccount = true },
-                            enabled = !loading,
+                            enabled = !state.isLoading,
                             shape = MaterialTheme.shapes.small
                         ) {
                             Text("Вход")
                         }
-                        if (!loading) MyButton(
+                        if (!state.isLoading) MyButton(
                             text = "Зарегистрироваться",
                             onClick = {
                                 vm.register(registerDTO)
-                                loading = true
                             },
                             enabled = isEmailValid && isPasswordValid,
                         ) else CircularProgressIndicator()
