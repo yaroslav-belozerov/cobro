@@ -139,7 +139,7 @@ fun AuthScreen(
                     errorText = if (!isEmailValid && typedUsername) "Логин должен содержать от 5 до 50 символов" else null,
                 )
                 val isPasswordValid =
-                    remember(registerDTO.password.length) { (registerDTO.password.length in 8..255) }
+                    remember(registerDTO.password) { (registerDTO.password.length in 8..255 && registerDTO.password.matches(Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}\$"))) }
                 var typedPassword by remember { mutableStateOf(false) }
                 MyTextField(
                     registerDTO.password,
