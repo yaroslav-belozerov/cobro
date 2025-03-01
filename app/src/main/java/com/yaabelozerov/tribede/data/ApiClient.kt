@@ -4,6 +4,7 @@ import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
 import com.yaabelozerov.tribede.data.model.TokenDto
 import com.yaabelozerov.tribede.data.model.UserDto
+import com.yaabelozerov.tribede.data.model.ZoneDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -32,6 +33,13 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
     suspend fun getUser(token: String): Result<UserDto> = runCatching {
         httpClient.get {
             url("/user")
+            header("Authorization", "Bearer $token")
+        }.body()
+    }
+
+    suspend fun getZones(token: String): Result<List<ZoneDto>> = runCatching {
+        httpClient.get {
+            url("/zone")
             header("Authorization", "Bearer $token")
         }.body()
     }

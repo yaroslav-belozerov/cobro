@@ -1,5 +1,6 @@
 package com.yaabelozerov.tribede.ui
 
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -11,6 +12,7 @@ import androidx.navigation.compose.composable
 import com.yaabelozerov.tribede.data.model.UserRole
 import com.yaabelozerov.tribede.ui.components.ReservationMap
 import com.yaabelozerov.tribede.ui.components.ReservationMapPreview
+import com.yaabelozerov.tribede.ui.screen.MainScreen
 import com.yaabelozerov.tribede.ui.screen.UserScreen
 import com.yaabelozerov.tribede.ui.util.Nav
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
@@ -22,7 +24,7 @@ fun App(modifier: Modifier = Modifier, navCtrl: NavHostController) {
     NavHost(navCtrl, startDestination = Nav.BOOK.route, modifier = modifier) {
         composable(Nav.BOOK.route) {
             userState.user?.let {
-                ReservationMapPreview()
+                MainScreen()
             }
         }
         composable(Nav.USER.route) {
