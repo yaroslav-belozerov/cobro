@@ -5,11 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.ApiClient
-import com.yaabelozerov.tribede.data.model.BookResponseDTO
-import com.yaabelozerov.tribede.data.model.ZoneDto
+import com.yaabelozerov.tribede.data.model.BookRequestDTO
+import com.yaabelozerov.tribede.data.model.toDomainModel
 import com.yaabelozerov.tribede.domain.model.BookingUI
 import com.yaabelozerov.tribede.ui.components.CoworkingSpace
-import com.yaabelozerov.tribede.data.model.toDomainModel
 import com.yaabelozerov.tribede.ui.components.toSpace
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -57,6 +56,14 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
                     Log.d("getBook", "getBookings: $it")
                 }
                 result.exceptionOrNull()?.printStackTrace()
+            }
+        }
+    }
+
+    fun book(req: BookRequestDTO, zoneId: String, seatId: String?) {
+        viewModelScope.launch {
+            Application.dataStore.getToken().first().let { token ->
+                api.postBook(token, req, zoneId, seatId)
             }
         }
     }
