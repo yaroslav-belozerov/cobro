@@ -76,9 +76,9 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
         }.body()
     }
 
-    suspend fun getQrCode(token: String, zoneId: String): Result<QrDto> = runCatching {
+    suspend fun getQrCode(token: String, bookId: String): Result<QrDto> = runCatching {
         httpClient.get {
-            url("/book/$zoneId/qr")
+            url("/book/$bookId/qr")
             header("Authorization", "Bearer $token")
         }.body()
     }

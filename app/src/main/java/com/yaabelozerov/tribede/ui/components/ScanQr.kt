@@ -62,7 +62,7 @@ fun ScanQR(modifier: Modifier, hasCameraPermission: Boolean, onScan: (String) ->
   }
 }
 
-private fun generateQRCode(data: String): Bitmap? {
+fun generateQRCode(data: String): Bitmap? {
   return try {
     val barcodeEncoder = BarcodeEncoder()
     barcodeEncoder.encodeBitmap(data, BarcodeFormat.QR_CODE, 400, 400)
