@@ -1,12 +1,16 @@
 package com.yaabelozerov.tribede.ui.screen
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -26,6 +30,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerColors
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -97,10 +103,13 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                 )
                 if (expanded) ModalBottomSheet(onDismissRequest = { expanded = false }) {
                     Column {
-                        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                            Text(chosenZone.name, style = MaterialTheme.typography.headlineSmall)
+                        Column(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(chosenZone.name, style = MaterialTheme.typography.headlineMedium)
                             Text(chosenZone.description)
-                            Text("0 / ${chosenZone.maxPeople}")
+                            Text(chosenZone.run { "Свободно ${maxPeople - 0} из $maxPeople" })
                             if (chosenZone.type != SpaceType.OFFICE) MyButton(
                                 onClick = { isBookingDialogOpen = true },
                                 text = "Забронировать",
@@ -108,8 +117,14 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
-                        Timeline(bookingsForToday)
-                        DatePicker(datePickerState)
+                        Box(Modifier.padding(horizontal = 12.dp, vertical = 24.dp)) {
+                            Timeline(bookingsForToday)
+                        }
+                        DatePicker(
+                            datePickerState, colors = DatePickerDefaults.colors(
+                                containerColor = MaterialTheme.colorScheme.background
+                            ), title = null
+                        )
                     }
                 }
             }
@@ -130,7 +145,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
 }
 
 @Composable
-fun BookingDialog(
+private fun BookingDialog(
     chosenDate: LocalDateTime,
     onDismiss: () -> Unit,
     onClick: (BookRequestDTO) -> Unit,
@@ -139,10 +154,9 @@ fun BookingDialog(
         Card {
             Column(
                 Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Text(
                     "Бронь на ${chosenDate.toLocalDate()}",
                     style = MaterialTheme.typography.headlineMedium
@@ -151,7 +165,6 @@ fun BookingDialog(
                 val minutes = listOf(0, 15, 30, 45)
                 val hourStartPager = rememberPagerState { hours.size }
                 val minuteStartPager = rememberPagerState { minutes.size }
-
 
                 Text("Начало", style = MaterialTheme.typography.headlineSmall)
                 Row(
@@ -251,40 +264,41 @@ fun BookingDialog(
                     }
                 }
 
-                var description by remember { mutableStateOf("") }
-                MyTextField(description, { description = it })
+                Column {
+                    var description by remember { mutableStateOf("") }
+                    MyTextField(
+                        description,
+                        { description = it },
+                        placeholder = "Комментарии к брони",
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                val from = chosenDate.withHour(hours[hourStartPager.currentPage])
-                    .withMinute(minutes[minuteStartPager.currentPage])
-                val to = chosenDate.withHour(hours[hourEndPager.currentPage])
-                    .withMinute(minutes[minuteEndPager.currentPage])
+                    val from = chosenDate.withHour(hours[hourStartPager.currentPage])
+                        .withMinute(minutes[minuteStartPager.currentPage])
+                    val to = chosenDate.withHour(hours[hourEndPager.currentPage])
+                        .withMinute(minutes[minuteEndPager.currentPage])
 
-                val hss = hours[hourStartPager.currentPage].toString().padStart(2, '0')
-                val mns = minutes[minuteStartPager.currentPage].toString().padStart(2, '0')
-                val hse = hours[hourEndPager.currentPage].toString().padStart(2, '0')
-                val mne = minutes[minuteEndPager.currentPage].toString().padStart(2, '0')
-                val deltaMins =
-                    (hours[hourEndPager.currentPage] - hours[hourStartPager.currentPage]) * 60 + (minutes[minuteEndPager.currentPage] - minutes[minuteStartPager.currentPage])
-                val delta = if (deltaMins >= 60) "${deltaMins / 60} ч." else "$deltaMins мин."
-                val enabled = deltaMins > 0
-                MyButton(
-                    onClick = {
-                        onClick(
-                            BookRequestDTO(
-                                from = "$from:00.000Z",
-                                to = "$to:00.000Z",
-                                description = description
+                    val deltaMins =
+                        (hours[hourEndPager.currentPage] - hours[hourStartPager.currentPage]) * 60 + (minutes[minuteEndPager.currentPage] - minutes[minuteStartPager.currentPage])
+                    val delta = if (deltaMins >= 60) {
+                        "${deltaMins / 60} ч." + if (deltaMins % 60 > 0) " ${deltaMins % 60} мин." else ""
+                    } else "$deltaMins мин."
+                    val enabled = deltaMins > 0
+                    MyButton(
+                        onClick = {
+                            onClick(
+                                BookRequestDTO(
+                                    from = "$from:00.000Z",
+                                    to = "$to:00.000Z",
+                                    description = description
+                                )
                             )
-                        )
-                        onDismiss()
-                    },
-                    enabled = enabled,
-                    text = if (enabled) "Подтвердить ($delta)" else "Некорректный интервал",
-                    icon = if (enabled) Icons.Default.CheckCircle else null
-                )
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                    if (enabled) Text(
-                        "С $hss:$mns до $hse:$mne"
+                            onDismiss()
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = enabled,
+                        text = if (enabled) "Подтвердить ($delta)" else "Некорректный интервал",
+                        icon = if (enabled) Icons.Default.CheckCircle else null
                     )
                 }
             }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,52 +40,73 @@ fun Timeline(
     startHour: Int = 10, // Начало рабочего дня (9:00)
     endHour: Int = 21, // Конец рабочего дня (21:00)
 ) {
-  val totalMinutes = (endHour - startHour) * 60
-  val minuteWidth =
-      (LocalConfiguration.current.screenWidthDp.toFloat() - 24) / totalMinutes.toFloat()
-  Log.d("timeline", "bookings: $bookings")
-  Column {
-    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp).height(40.dp)) {
-      // Фон таймлайна
-      Canvas(modifier = Modifier.fillMaxSize()) {
-        drawLine(
-            color = Color.Gray,
-            start = Offset(0f, size.height / 2),
-            end = Offset(size.width, size.height / 2),
-            strokeWidth = 2f)
-      }
-
-      // Отображение бронирований
-      bookings.forEach { booking ->
-        val startOffset = ((booking.start.hour - startHour) * 60) * minuteWidth
-        val endOffset =
-            ((booking.end.hour - startHour) * 60) * minuteWidth // поправка на timeZone
-        Log.d("timeline 2", "startOffset: $startOffset, endOffset: $endOffset")
-        Log.d("timeline 3", "start hour: ${booking.start.hour}, end hour: ${booking.end.hour}")
-        // TODO timezone fix надо
+    val totalMinutes = (endHour - startHour) * 60
+    val minuteWidth =
+        (LocalConfiguration.current.screenWidthDp.toFloat() - 48) / totalMinutes.toFloat()
+    Log.d("timeline", "bookings: $bookings")
+    val bgColor = MaterialTheme.colorScheme.onBackground
+    Column {
         Box(
-            modifier =
-                Modifier.offset(x = startOffset.dp, y = 10.dp)
-                    .width((endOffset - startOffset).dp)
-                    .height(30.dp)
-                    .clip(shape = RoundedCornerShape(3.dp))
-                    .background(
-                        if (booking.status == BookStatus.CANCELLED) Color.Red
-                        else Color(0xFF80CED7)),
-        )
-      }
-    }
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(top = 6.dp, start = 4.dp, end = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween) {
-          for (hour in startHour..endHour) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.width(16.dp)) {
-                  Box(modifier = Modifier.height(6.dp).width(1.5.dp).background(color = Color.Gray))
-                  Text(text = "$hour", fontSize = 12.sp, color = Color.Gray)
-                }
-          }
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp)
+                .height(40.dp)
+        ) {
+            // Фон таймлайна
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                drawLine(
+                    color = bgColor,
+                    start = Offset(0f, size.height / 2),
+                    end = Offset(size.width, size.height / 2),
+                    strokeWidth = 2f
+                )
+                drawCircle(bgColor, radius = 10f, center = Offset(0f, size.height / 2))
+                drawCircle(bgColor, radius = 10f, center = Offset(size.width, size.height / 2))
+            }
+
+            // Отображение бронирований
+            bookings.forEach { booking ->
+                val startOffset = ((booking.start.hour - startHour) * 60) * minuteWidth
+                val endOffset =
+                    ((booking.end.hour - startHour) * 60) * minuteWidth // поправка на timeZone
+                Log.d("timeline 2", "startOffset: $startOffset, endOffset: $endOffset")
+                Log.d(
+                    "timeline 3", "start hour: ${booking.start.hour}, end hour: ${booking.end.hour}"
+                )
+                // TODO timezone fix надо
+                Box(
+                    modifier = Modifier
+                        .offset(x = startOffset.dp, y = 10.dp)
+                        .width((endOffset - startOffset).dp)
+                        .height(30.dp)
+                        .clip(shape = RoundedCornerShape(3.dp))
+                        .background(
+                            if (booking.status == BookStatus.CANCELLED) Color.Red
+                            else Color(0xFF80CED7)
+                        ),
+                )
+            }
         }
-  }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 6.dp, start = 4.dp, end = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            for (hour in startHour..endHour) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.width(16.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .height(6.dp)
+                            .width(1.5.dp)
+                            .background(color = Color.Gray)
+                    )
+                    Text(text = "$hour", fontSize = 12.sp, color = Color.Gray)
+                }
+            }
+        }
+    }
 }
