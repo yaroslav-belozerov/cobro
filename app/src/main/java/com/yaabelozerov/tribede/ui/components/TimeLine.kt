@@ -74,7 +74,7 @@ fun Timeline(
                         .width((endOffset - startOffset).dp)
                         .height(30.dp)
                         .clip(shape = RoundedCornerShape(3.dp))
-                        .background(if (booking.status == BookStatus.CANCELLED) Color.Red else Color.Red),
+                        .background(if (booking.status == BookStatus.CANCELLED) Color.Red else Color(0xFF80CED7)),
 
                     )
             }
