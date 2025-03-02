@@ -9,7 +9,7 @@ data class UserDto(
     val email: String,
     val city: String?,
     val books: List<Book>?,
-    val avatarUrl: String,
+    val avatarUrl: String?,
     val role: Int
 )
 
