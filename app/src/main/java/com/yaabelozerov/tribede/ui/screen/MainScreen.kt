@@ -54,6 +54,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
@@ -61,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
+import com.yaabelozerov.tribede.data.model.SeatDto
 import com.yaabelozerov.tribede.ui.components.CoworkingSpace
 import com.yaabelozerov.tribede.ui.components.MyButton
 import com.yaabelozerov.tribede.ui.components.MyTextField
@@ -92,6 +96,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
         }
     }
     var chosenZone by remember { mutableStateOf<CoworkingSpace?>(null) }
+    var chosenSeat by remember { mutableStateOf<SeatDto?>(null) }
     state.zones.takeIf { it.isNotEmpty() }?.let { zones ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -112,7 +117,12 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                         }
                     }, zones
                 )
-                if (chosenZone != null) ModalBottomSheet(onDismissRequest = { chosenZone = null }) {
+                if (chosenZone != null) ModalBottomSheet(onDismissRequest = {
+                    chosenZone = null
+                    chosenSeat = null
+                    vm.resetModal()
+                    datePickerState.selectedDateMillis = Instant.now().toEpochMilli()
+                }) {
                     Column {
                         Column(
                             modifier = Modifier.padding(horizontal = 16.dp),
@@ -139,10 +149,13 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                                                 val pointX = (it.x - zone.position.x) * width / zone.position.width
                                                 val pointY = (it.y - zone.position.y) * height / zone.position.height
                                                 val distance = sqrt(((x - pointX).pow(2) + (y - pointY).pow(2)))
-                                                println("$distance $width $radius ${radius.dp.toPx()}")
-                                                println("${pointX} ${pointY} $x $y")
                                                 if (distance < radius.dp.toPx()) {
-                                                    println("clicked ${it.id}")
+                                                    if (it.id == chosenSeat?.id) {
+                                                        chosenSeat = null
+                                                    } else {
+                                                        chosenSeat = it
+                                                        vm.getBookings(zoneId = zone.id, seatId = it.id)
+                                                    }
                                                 }
                                             }
                                         })
@@ -154,13 +167,21 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                                                 (seat.y - zone.position.y) * height / zone.position.height
                                             ), radius = radius.dp.toPx()
                                         )
+                                        if (seat.id == chosenSeat?.id) {
+                                            drawCircle(
+                                                color = Color.Black, center = Offset(
+                                                    (seat.x - zone.position.x) * width / zone.position.width,
+                                                    (seat.y - zone.position.y) * height / zone.position.height
+                                                ), radius = radius.dp.toPx(), style = Stroke(4.dp.toPx(), cap = StrokeCap.Round)
+                                            )
+                                        }
                                     }
                                 }
 
                                 Text(zone.name, style = MaterialTheme.typography.headlineMedium)
                                 Text(zone.description)
                                 Text(zone.run { "Свободно ${maxPeople - 0} из $maxPeople" })
-                                if (zone.type != SpaceType.OFFICE) MyButton(
+                                if (zone.type != SpaceType.OFFICE || chosenSeat != null) MyButton(
                                     onClick = { isBookingDialogOpen = true },
                                     text = "Забронировать",
                                     icon = Icons.Default.EditCalendar,
@@ -168,14 +189,27 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                                 )
                             }
                         }
-                        Box(Modifier.padding(horizontal = 12.dp, vertical = 24.dp)) {
-                            Timeline(bookingsForToday)
+                        if (chosenZone?.type != SpaceType.OFFICE) {
+                            Box(Modifier.padding(horizontal = 12.dp, vertical = 24.dp)) {
+                                Timeline(bookingsForToday)
+                            }
+                            DatePicker(
+                                datePickerState, colors = DatePickerDefaults.colors(
+                                    containerColor = MaterialTheme.colorScheme.background
+                                ), title = null
+                            )
+                        } else {
+                            if (chosenSeat != null) {
+                                Box(Modifier.padding(horizontal = 12.dp, vertical = 24.dp)) {
+                                    Timeline(bookingsForToday)
+                                }
+                                DatePicker(
+                                    datePickerState, colors = DatePickerDefaults.colors(
+                                        containerColor = MaterialTheme.colorScheme.background
+                                    ), title = null
+                                )
+                            }
                         }
-                        DatePicker(
-                            datePickerState, colors = DatePickerDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.background
-                            ), title = null
-                        )
                     }
                 }
             }
@@ -189,7 +223,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                 onClick = { req ->
                     chosenZone?.id?.let {
                         vm.book(
-                            req = req, zoneId = it, seatId = null
+                            req = req, zoneId = it, seatId = chosenSeat?.id
                         ) {
                             userVm.fetchUserInfo()
                         }

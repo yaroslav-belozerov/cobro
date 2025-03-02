@@ -14,8 +14,10 @@ data class BookResponseDTO(
     val start: String,
     val end: String,
     val description: String,
+    val zoneId: String,
     val zoneName: String,
-    val officeSeat: SeatDto?,
+    val officeSeatId: String?,
+    val officeSeatNumber: String?,
     val status: Int
 )
 
