@@ -35,72 +35,85 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun UserScreen(vm: UserViewModel) {
-  val uiState by vm.state.collectAsState()
-  val scope = rememberCoroutineScope()
-  uiState.user?.let { userInfo ->
-    LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+    val uiState by vm.state.collectAsState()
+    val scope = rememberCoroutineScope()
+    uiState.user?.let { userInfo ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          item {
-            Text("Профиль", style = MaterialTheme.typography.headlineMedium)
-            AsyncImage(
-                model = userInfo.avatarUrl,
-                contentDescription = "avatar",
-                modifier = Modifier.size(100.dp).clip(CircleShape).clickable { vm.onPickMedia() },
-                contentScale = ContentScale.Crop)
-          }
-          item { Text(userInfo.name, style = MaterialTheme.typography.headlineSmall) }
-          item { Text(userInfo.email) }
-          //            item {
-          //                Text(UserRole.entries[userInfo.role].name)
-          //            }
-          if (userInfo.books != null) {
-            userInfo.books?.let {
-              item {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                  Text("Мои брониирования")
-                    Spacer(Modifier.size(8.dp))
-                  Box(modifier = Modifier.weight(1f).height(2.dp).background(color = Color.Gray))
-                }
-              }
-              items(userInfo.books.filter { BookStatus.entries[it.status] == BookStatus.PENDING }) {
-                BookCard(it)
-              }
-              item {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                  Text("История")
-                    Spacer(Modifier.size(8.dp))
-                  Box(modifier = Modifier.weight(1f).height(2.dp).background(color = Color.Gray))
-                }
-              }
-              items(userInfo.books.filter { BookStatus.entries[it.status] != BookStatus.PENDING }) {
-                BookCard(it)
-              }
-            }
-          } else {
             item {
-              Text(
-                  "Здесь будут ваши бронирования",
-                  style = MaterialTheme.typography.bodySmall,
-                  color = MaterialTheme.colorScheme.onPrimary)
+                Text("Профиль", style = MaterialTheme.typography.headlineMedium)
+                AsyncImage(
+                    model = userInfo.avatarUrl,
+                    contentDescription = "avatar",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .clickable { vm.onPickMedia() },
+                    contentScale = ContentScale.Crop
+                )
             }
-          }
-
-          item {
-            TextButton(
-                onClick = {
-                  scope.launch {
-                    Application.dataStore.apply {
-                      saveToken("")
-                      saveIsAdmin(false)
+            item { Text(userInfo.name, style = MaterialTheme.typography.headlineSmall) }
+            item { Text(userInfo.email) }
+            //            item {
+            //                Text(UserRole.entries[userInfo.role].name)
+            //            }
+            userInfo.books?.let {
+                item {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Мои брониирования")
+                        Spacer(Modifier.size(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(2.dp)
+                                .background(color = Color.Gray)
+                        )
                     }
-                  }
-                }) {
-                  Text("Выйти")
                 }
-          }
+                items(userInfo.books.filter { BookStatus.entries[it.status] == BookStatus.PENDING }) {
+                    BookCard(it)
+                }
+                item {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("История")
+                        Spacer(Modifier.size(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(2.dp)
+                                .background(color = Color.Gray)
+                        )
+                    }
+                }
+                items(userInfo.books.filter { BookStatus.entries[it.status] != BookStatus.PENDING }) {
+                    BookCard(it)
+                }
+            } ?: item {
+                Text(
+                    "Здесь будут ваши бронирования",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+
+
+            item {
+                TextButton(onClick = {
+                    scope.launch {
+                        Application.dataStore.apply {
+                            saveToken("")
+                            saveIsAdmin(false)
+                        }
+                    }
+                }) {
+                    Text("Выйти")
+                }
+            }
         }
-  }
+    }
 }

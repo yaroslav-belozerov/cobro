@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.yaabelozerov.tribede.data.model.Book
+import com.yaabelozerov.tribede.data.model.BookResponseDTO
 import com.yaabelozerov.tribede.domain.model.BookStatus
 import java.time.Instant
 import java.time.LocalDateTime
@@ -22,7 +22,7 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 @Composable
-fun BookCard(model: Book) {
+fun BookCard(model: BookResponseDTO) {
     val startDateTime = LocalDateTime.ofInstant(Instant.parse(model.start), ZoneId.systemDefault())
     val endDateTime = LocalDateTime.ofInstant(Instant.parse(model.end), ZoneId.systemDefault())
     var minutes = ChronoUnit.MINUTES.between(startDateTime, endDateTime)

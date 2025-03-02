@@ -95,7 +95,13 @@ class MainActivity : ComponentActivity() {
                                                 Modifier.size(30.dp)
                                             )
                                         },
-                                            onClick = { navCtrl.navigate(it.route) },
+                                            onClick = { navCtrl.navigate(it.route) {
+                                                restoreState = true
+                                                launchSingleTop = true
+                                                popUpTo(Nav.BOOK.route) {
+                                                    saveState = true
+                                                }
+                                            } },
                                             selected = selected
                                         )
                                     }

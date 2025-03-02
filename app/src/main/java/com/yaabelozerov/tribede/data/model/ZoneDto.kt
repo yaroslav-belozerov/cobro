@@ -27,5 +27,5 @@ data class ZoneTag(
 data class SeatDto(
     val id: String,
     val x: Float,
-    val y: Float
+    val y: Float,
 )
