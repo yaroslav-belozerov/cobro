@@ -36,8 +36,12 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
             Application.dataStore.getToken().distinctUntilChanged().collect { token ->
                 val result = api.getZones(token)
                 result.getOrNull()?.let {
+                    val zones = it.map {
+                        val seats = api.getSeatsForOfficeZone(token, it.id)
+                        it.toSpace(seats.getOrNull() ?: emptyList())
+                    }
                     _state.update { state ->
-                        state.copy(zones = it.map { it.toSpace() })
+                        state.copy(zones = zones)
                     }
                 }
                 result.exceptionOrNull()?.printStackTrace()
@@ -54,7 +58,7 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
                         state.copy(currentBookings = it.map { it.toDomainModel() })
                     }
                     Log.d("getBook", "getBookings: $it")
-                }
+                } ?: _state.update { it.copy(currentBookings = emptyList()) }
                 result.exceptionOrNull()?.printStackTrace()
             }
         }

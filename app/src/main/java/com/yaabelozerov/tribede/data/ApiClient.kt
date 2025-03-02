@@ -4,6 +4,7 @@ import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.BookResponseDTO
 import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
+import com.yaabelozerov.tribede.data.model.SeatDto
 import com.yaabelozerov.tribede.data.model.TokenDto
 import com.yaabelozerov.tribede.data.model.UserDto
 import com.yaabelozerov.tribede.data.model.ZoneDto
@@ -54,6 +55,12 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
             }
         }.body()
     }
+
+    suspend fun getSeatsForOfficeZone(token: String, zoneId: String): Result<List<SeatDto>> = runCatching {
+        httpClient.get {
+            url("/zone/office/$zoneId/seats")
+            header("Authorization", "Bearer $token")
+        }.body()
 
     suspend fun postBook(token: String, body: BookRequestDTO, zoneId: String, seatId: String?) = runCatching {
         httpClient.post {
