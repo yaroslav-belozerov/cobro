@@ -1,5 +1,6 @@
 package com.yaabelozerov.tribede.data
 
+import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.BookResponseDTO
 import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
@@ -60,5 +61,15 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
             url("/zone/office/$zoneId/seats")
             header("Authorization", "Bearer $token")
         }.body()
+
+    suspend fun postBook(token: String, body: BookRequestDTO, zoneId: String, seatId: String?) = runCatching {
+        httpClient.post {
+            url("/book/$zoneId")
+            header("Authorization", "Bearer $token")
+            setBody(body)
+            seatId?.let {
+                parameter("seatId", it)
+            }
+        }
     }
 }

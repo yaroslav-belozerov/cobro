@@ -26,3 +26,12 @@ fun BookResponseDTO.toDomainModel(): BookingUI =
         description = description,
         status = BookStatus.entries.getOrElse(status) { BookStatus.ACTIVE }
     )
+
+
+@Serializable
+data class BookRequestDTO(
+    val from: String,
+    val to: String,
+    val description: String
+)
+

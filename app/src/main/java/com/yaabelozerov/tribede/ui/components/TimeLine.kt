@@ -37,18 +37,18 @@ data class Booking(
 @Composable
 fun Timeline(
     bookings: List<BookingUI>,
-    startHour: Int = 9, // Начало рабочего дня (9:00)
-    endHour: Int = 18, // Конец рабочего дня (18:00)
+    startHour: Int = 10, // Начало рабочего дня (9:00)
+    endHour: Int = 21, // Конец рабочего дня (21:00)
 ) {
     val totalMinutes = (endHour - startHour) * 60
     val minuteWidth =
-        (LocalConfiguration.current.screenWidthDp.toFloat() - 16) / totalMinutes.toFloat()
+        (LocalConfiguration.current.screenWidthDp.toFloat() - 24) / totalMinutes.toFloat()
     Log.d("timeline", "bookings: $bookings")
     Column {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp)
+                .padding(horizontal = 12.dp)
                 .height(40.dp)
         ) {
             // Фон таймлайна
@@ -63,9 +63,10 @@ fun Timeline(
 
             // Отображение бронирований
             bookings.forEach { booking ->
-                val startOffset = ((booking.start.hour - startHour) * 60 ) * minuteWidth
-                val endOffset = ((booking.end.hour - startHour) * 60) * minuteWidth
+                val startOffset = ((booking.start.hour - startHour - 3) * 60 ) * minuteWidth
+                val endOffset = ((booking.end.hour - startHour - 3) * 60) * minuteWidth // поправка на timeZone
                 Log.d("timeline 2", "startOffset: $startOffset, endOffset: $endOffset")
+                Log.d("timeline 3", "start hour: ${booking.start.hour}, end hour: ${booking.end.hour}")
 // TODO timezone fix надо
                 Box(
                     modifier = Modifier
@@ -73,7 +74,7 @@ fun Timeline(
                         .width((endOffset - startOffset).dp)
                         .height(30.dp)
                         .clip(shape = RoundedCornerShape(3.dp))
-                        .background(if (booking.status == BookStatus.ACTIVE) Color.Green else Color.Red),
+                        .background(if (booking.status == BookStatus.CANCELLED) Color.Red else Color(0xFF80CED7)),
 
                     )
             }
@@ -81,7 +82,7 @@ fun Timeline(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 6.dp),
+                .padding(top = 6.dp, start = 4.dp, end = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             for (hour in startHour..endHour) {
