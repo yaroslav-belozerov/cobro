@@ -59,19 +59,37 @@ fun UserScreen(vm: UserViewModel) {
 //            item {
 //                Text(UserRole.entries[userInfo.role].name)
 //            }
-            userInfo.books?.let {
-                item {
-                    Row {
-                        Text("Мои брониирования")
-                        Box(modifier = Modifier.weight(1f).height(2.dp).background(color = Color.Gray))
+            if (userInfo.books != null) {
+                userInfo.books?.let {
+                    item {
+                        Row {
+                            Text("Мои брониирования")
+                            Box(modifier = Modifier.weight(1f).height(2.dp).background(color = Color.Gray))
+                        }
+                    }
+                    items(userInfo.books.filter {
+                        BookStatus.entries[it.status] == BookStatus.PENDING }
+                    )  {
+                        BookCard(it)
+                    }
+                    item {
+                        Row {
+                            Text("История ")
+                            Box(modifier = Modifier.weight(1f).height(2.dp).background(color = Color.Gray))
+                        }
+                    }
+                    items(userInfo.books.filter {
+                        BookStatus.entries[it.status] != BookStatus.PENDING }
+                    )  {
+                        BookCard(it)
                     }
                 }
-                items(userInfo.books.filter {
-                    BookStatus.entries[it.status] == BookStatus.PENDING }
-                )  {
-                    BookCard(it)
+            } else {
+                item {
+                    Text("Здесь будут ваши бронирования", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
+
             item {
                 TextButton(onClick = { scope.launch {
                     Application.dataStore.apply {
