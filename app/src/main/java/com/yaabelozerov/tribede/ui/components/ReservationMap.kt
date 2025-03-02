@@ -57,10 +57,10 @@ fun ZoneDto.toSpace(seats: List<SeatDto>): CoworkingSpace {
         maxPeople = capacity,
         type = spaceType,
         color = when (spaceType) {
-            SpaceType.OFFICE -> Color(android.graphics.Color.parseColor("#CCDBDC"))
-            SpaceType.TALKROOM -> Color(android.graphics.Color.parseColor("#003249"))
-            SpaceType.OPEN -> Color(android.graphics.Color.parseColor("#80CED7"))
-            SpaceType.MISC -> Color(android.graphics.Color.parseColor("#5F6062")).copy(0.1f)
+            SpaceType.OFFICE -> Color(0xFFCCDBDC)
+            SpaceType.TALKROOM -> Color(0xff1e6585)
+            SpaceType.OPEN -> Color(0xFF80CED7)
+            SpaceType.MISC -> Color(0xFF5F6062).copy(0.1f)
         },
         position = Pos(xCoordinate, yCoordinate, width, height),
         tags = zoneTags.map { it.tag.toString() },
@@ -146,8 +146,8 @@ fun ReservationMap(
                 drawCircle(
                     color = Color(0xFFD1603D),
                     center = Offset(seat.x * width, seat.y * height),
-                    radius = 5.dp.toPx()
-                ) // TODO хули не грузятся
+                    radius = 6.dp.toPx()
+                )
             }
         }
     }

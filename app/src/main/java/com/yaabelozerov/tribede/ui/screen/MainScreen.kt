@@ -146,7 +146,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                             modifier = Modifier.padding(horizontal = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            val radius = 22
+                            val radius = 24
                             chosenZone?.let { zone ->
                                 var width by remember { mutableIntStateOf(0) }
                                 var height by remember { mutableIntStateOf(0) }
@@ -224,43 +224,39 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                                 }
 
 
-                                Text(zone.name, style = MaterialTheme.typography.headlineMedium)
-                                Text(zone.description)
-                                Text(zone.run { "Свободно ${maxPeople - 0} из $maxPeople" })
-                                if (zone.type != SpaceType.OFFICE || chosenSeat != null) MyButton(
-                                    onClick = { isBookingDialogOpen = true },
-                                    text = "Забронировать",
-                                    icon = Icons.Default.EditCalendar,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                )
-                            }
-                        }
-                        if (chosenZone?.type != SpaceType.OFFICE) {
-                            Box(Modifier.padding(horizontal = 12.dp, vertical = 24.dp)) {
-                                Timeline(bookingsForToday)
-                            }
-                            DatePicker(
-                                datePickerState, colors = DatePickerDefaults.colors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainer
-                                ), title = null
-                            )
-                        } else {
-                            AnimatedVisibility(chosenSeat != null) {
-                                Column {
-                                    Box(
-                                        Modifier.padding(
-                                            horizontal = 12.dp, vertical = 12.dp
-                                        )
-                                    ) {
-                                        Timeline(bookingsForToday)
-                                    }
-                                    DatePicker(
-                                        datePickerState, colors = DatePickerDefaults.colors(
-                                            containerColor = MaterialTheme.colorScheme.surfaceContainer
-                                        ), title = null
+                                if (chosenSeat == null && zone.type == SpaceType.OFFICE) {
+                                    Text(
+                                        "Выберите место",
+                                        style = MaterialTheme.typography.bodyMedium
                                     )
                                 }
+                                Text(zone.name, style = MaterialTheme.typography.headlineLarge)
+                                Text(zone.description)
+                                Text(zone.run { "Свободно ${maxPeople - 0} из $maxPeople" })
+                                AnimatedVisibility(zone.type != SpaceType.OFFICE || chosenSeat != null) {
+                                    MyButton(
+                                        onClick = { isBookingDialogOpen = true },
+                                        text = "Забронировать",
+                                        icon = Icons.Default.EditCalendar,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
+                        }
+                        AnimatedVisibility(chosenSeat != null || chosenZone?.type != SpaceType.OFFICE) {
+                            Column {
+                                if (chosenZone?.type != SpaceType.OPEN) Box(
+                                    Modifier.padding(
+                                        horizontal = 12.dp, vertical = 12.dp
+                                    )
+                                ) {
+                                    Timeline(bookingsForToday)
+                                } else Spacer(Modifier.height(12.dp))
+                                DatePicker(
+                                    datePickerState, colors = DatePickerDefaults.colors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                                    ), title = null
+                                )
                             }
                         }
                     }

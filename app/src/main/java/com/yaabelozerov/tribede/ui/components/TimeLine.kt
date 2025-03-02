@@ -58,10 +58,8 @@ fun Timeline(
                     color = bgColor,
                     start = Offset(0f, size.height / 2),
                     end = Offset(size.width, size.height / 2),
-                    strokeWidth = 2f
+                    strokeWidth = 3f
                 )
-                drawCircle(bgColor, radius = 10f, center = Offset(0f, size.height / 2))
-                drawCircle(bgColor, radius = 10f, center = Offset(size.width, size.height / 2))
             }
 
             // Отображение бронирований
@@ -79,13 +77,15 @@ fun Timeline(
                     modifier = Modifier
                         .offset(x = startOffset.dp, y = 10.dp)
                         .width((endOffset - startOffset).dp)
-                        .height(30.dp)
-                        .clip(shape = RoundedCornerShape(3.dp))
-                        .background(
-                            if (booking.status == BookStatus.CANCELLED) Color.Red
-                            else Color(0xFF80CED7)
-                        ),
+                        .height(24.dp)
+                        .clip(shape = MaterialTheme.shapes.extraSmall)
+                        .background(Color(0xFF80CED7)),
                 )
+            }
+
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                drawCircle(bgColor, radius = 10f, center = Offset(0f, size.height / 2))
+                drawCircle(bgColor, radius = 10f, center = Offset(size.width, size.height / 2))
             }
         }
         Row(
