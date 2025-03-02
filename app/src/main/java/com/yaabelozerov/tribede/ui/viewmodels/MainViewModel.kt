@@ -68,6 +68,7 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
         viewModelScope.launch {
             Application.dataStore.getToken().first().let { token ->
                 api.postBook(token, req, zoneId, seatId).also { println(it) }
+                getBookings(zoneId, seatId)
             }
         }
     }
