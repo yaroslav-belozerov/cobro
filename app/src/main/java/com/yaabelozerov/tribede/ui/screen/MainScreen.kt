@@ -8,13 +8,17 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,16 +45,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
+import com.yaabelozerov.tribede.ui.components.CoworkingSpace
 import com.yaabelozerov.tribede.ui.components.MyButton
 import com.yaabelozerov.tribede.ui.components.MyTextField
 import com.yaabelozerov.tribede.ui.components.ReservationMap
@@ -58,16 +69,18 @@ import com.yaabelozerov.tribede.ui.components.SpaceType
 import com.yaabelozerov.tribede.ui.components.Timeline
 import com.yaabelozerov.tribede.ui.viewmodels.MainViewModel
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
+import java.lang.Math.pow
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewModel()) {
     val state by vm.state.collectAsState()
     var isBookingDialogOpen by remember { mutableStateOf(false) }
-    var chosenDate by remember { mutableStateOf(LocalDateTime.now()) }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = Instant.now().toEpochMilli()
     )
@@ -78,9 +91,8 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
             } ?: Instant.now(), ZoneId.systemDefault()).toLocalDate()
         }
     }
+    var chosenZone by remember { mutableStateOf<CoworkingSpace?>(null) }
     state.zones.takeIf { it.isNotEmpty() }?.let { zones ->
-        var chosenZone by remember { mutableStateOf(zones.first()) }
-        var expanded by remember { mutableStateOf(false) }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -91,31 +103,70 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
             Text("Забронировать", style = MaterialTheme.typography.headlineMedium)
             Column(Modifier.fillMaxWidth()) {
                 ReservationMap(
-                    if (expanded) chosenZone else null, {
+                    chosenZone, {
                         if (chosenZone == it) {
-                            expanded = !expanded
+                            chosenZone = null
                         } else {
                             chosenZone = it
-                            expanded = true
-                            vm.getBookings(zoneId = it.id, seatId = null)
+                            if (it.type != SpaceType.OFFICE) vm.getBookings(zoneId = it.id, seatId = null)
                         }
                     }, zones
                 )
-                if (expanded) ModalBottomSheet(onDismissRequest = { expanded = false }) {
+                if (chosenZone != null) ModalBottomSheet(onDismissRequest = { chosenZone = null }) {
                     Column {
                         Column(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(chosenZone.name, style = MaterialTheme.typography.headlineMedium)
-                            Text(chosenZone.description)
-                            Text(chosenZone.run { "Свободно ${maxPeople - 0} из $maxPeople" })
-                            if (chosenZone.type != SpaceType.OFFICE) MyButton(
-                                onClick = { isBookingDialogOpen = true },
-                                text = "Забронировать",
-                                icon = Icons.Default.EditCalendar,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                            val radius = 17
+                            chosenZone?.let { zone ->
+                                var width by remember { mutableIntStateOf(0) }
+                                var height by remember { mutableIntStateOf(0) }
+                                if (zone.type == SpaceType.OFFICE) Canvas(Modifier
+                                    .padding(12.dp)
+                                    .fillMaxWidth(0.5f)
+                                    .aspectRatio(zone.position.width / zone.position.height)
+                                    .clip(MaterialTheme.shapes.large)
+                                    .background(zone.color)
+                                    .onPlaced { layout ->
+                                        width = layout.size.width
+                                        height = layout.size.height
+                                    }.pointerInput(Unit) {
+                                        detectTapGestures(onTap = { offset ->
+                                            val x = offset.x
+                                            val y = offset.y 
+                                            zone.seats.forEach {
+                                                val pointX = (it.x - zone.position.x) * width / zone.position.width
+                                                val pointY = (it.y - zone.position.y) * height / zone.position.height
+                                                val distance = sqrt(((x - pointX).pow(2) + (y - pointY).pow(2)))
+                                                println("$distance $width $radius ${radius.dp.toPx()}")
+                                                println("${pointX} ${pointY} $x $y")
+                                                if (distance < radius.dp.toPx()) {
+                                                    println("clicked ${it.id}")
+                                                }
+                                            }
+                                        })
+                                    }) {
+                                    zone.seats.forEach { seat ->
+                                        drawCircle(
+                                            color = Color.Blue, center = Offset(
+                                                (seat.x - zone.position.x) * width / zone.position.width,
+                                                (seat.y - zone.position.y) * height / zone.position.height
+                                            ), radius = radius.dp.toPx()
+                                        )
+                                    }
+                                }
+
+                                Text(zone.name, style = MaterialTheme.typography.headlineMedium)
+                                Text(zone.description)
+                                Text(zone.run { "Свободно ${maxPeople - 0} из $maxPeople" })
+                                if (zone.type != SpaceType.OFFICE) MyButton(
+                                    onClick = { isBookingDialogOpen = true },
+                                    text = "Забронировать",
+                                    icon = Icons.Default.EditCalendar,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                         }
                         Box(Modifier.padding(horizontal = 12.dp, vertical = 24.dp)) {
                             Timeline(bookingsForToday)
@@ -131,13 +182,17 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
         }
 
         if (isBookingDialogOpen) {
-            BookingDialog(chosenDate,
+            BookingDialog(LocalDateTime.ofInstant(datePickerState.selectedDateMillis?.let {
+                Instant.ofEpochMilli(it)
+            } ?: Instant.now(), ZoneId.systemDefault()),
                 onDismiss = { isBookingDialogOpen = false },
                 onClick = { req ->
-                    vm.book(
-                        req = req, zoneId = chosenZone.id, seatId = null
-                    ) {
-                        userVm.fetchUserInfo()
+                    chosenZone?.id?.let {
+                        vm.book(
+                            req = req, zoneId = it, seatId = null
+                        ) {
+                            userVm.fetchUserInfo()
+                        }
                     }
                 })
         }
