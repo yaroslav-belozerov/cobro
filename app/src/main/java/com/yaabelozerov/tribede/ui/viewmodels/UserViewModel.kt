@@ -28,6 +28,10 @@ class UserViewModel(
         fetchUserInfo()
     }
 
+    fun onPickMedia() {
+
+    }
+
     private fun fetchUserInfo() {
         viewModelScope.launch {
             dataStore.getToken().distinctUntilChanged().collect {

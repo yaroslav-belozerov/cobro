@@ -9,6 +9,7 @@ data class UserDto(
     val email: String,
     val city: String?,
     val books: List<Book>?,
+    val avatarUrl: String,
     val role: Int
 )
 
@@ -26,4 +27,6 @@ data class Book(
     val user: String,
     val description: String,
     val status: Int,
+    val roomName: String,
+    val seat: String?
 )
