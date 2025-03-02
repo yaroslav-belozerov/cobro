@@ -28,7 +28,7 @@ fun BookResponseDTO.toDomainModel(): BookingUI =
         start = LocalDateTime.ofInstant(Instant.parse(start), ZoneId.of("UTC")),
         end = LocalDateTime.ofInstant(Instant.parse(end), ZoneId.of("UTC")),
         description = description,
-        status = BookStatus.entries.getOrElse(status) { BookStatus.ACTIVE }
+        status = BookStatus.entries.getOrElse(status.also { println("status: $it") }) { BookStatus.ACTIVE }
     )
 
 

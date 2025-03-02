@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EventAvailable
+import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.HourglassTop
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
@@ -55,10 +57,23 @@ fun BookCard(model: BookResponseDTO, onClick: (String) -> Unit = {}) {
                     Text("Ждём вас")
                 }
             } else {
-                Row {
-                    Icon(Icons.Filled.EventAvailable, contentDescription = null)
-                    Text("Завершено")
+                if (status == BookStatus.CANCELLED) {
+                    Row {
+                        Icon(Icons.Filled.EventBusy, contentDescription = null)
+                        Text("Отменено")
+                    }
+                } else if (status == BookStatus.ENDED) {
+                    Row {
+                        Icon(Icons.Filled.EventAvailable, contentDescription = null)
+                        Text("Завершено")
+                    }
+                } else if (status == BookStatus.ACTIVE) {
+                    Row {
+                        Icon(Icons.Filled.PlayArrow, contentDescription = null)
+                        Text("В процессе")
+                    }
                 }
+
             }
         }
         Spacer(Modifier.weight(1f))

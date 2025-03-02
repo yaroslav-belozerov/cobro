@@ -75,7 +75,7 @@ class UserViewModel(
     fun getQr(bookId: String) {
         viewModelScope.launch {
             dataStore.getToken().first().let { token ->
-                apiClient.getQrCode(token, bookId).getOrNull()?.let {
+                apiClient.getQrCode(token, bookId).also { it.exceptionOrNull()?.printStackTrace() }.getOrNull()?.let {
                     _state.update { state ->
                         state.copy(qrString = it.code)
                     }
@@ -89,7 +89,9 @@ class UserViewModel(
             dataStore.getToken().distinctUntilChanged().collect {
                 it.takeIf { it.isNotEmpty() }?.let {
                     val result = apiClient.getUser(it)
+                    println("result: $result")
                     result.getOrNull()?.let {
+
                         _state.update { state ->
                             state.copy(user = it)
                         }
