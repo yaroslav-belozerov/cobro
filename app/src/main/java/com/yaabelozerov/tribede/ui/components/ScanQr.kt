@@ -23,7 +23,7 @@ import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.yaabelozerov.tribede.domain.QrCodeAnalizer
 
 @Composable
-fun scanQR(modifier: Modifier, hasCameraPermission: Boolean, onScan: (String) -> Unit) {
+fun ScanQR(modifier: Modifier, hasCameraPermission: Boolean, onScan: (String) -> Unit) {
 
   val context = LocalContext.current
   val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }

@@ -1,9 +1,12 @@
 package com.yaabelozerov.tribede
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,12 +39,32 @@ import com.yaabelozerov.tribede.ui.screen.AuthScreen
 import com.yaabelozerov.tribede.ui.theme.AppTheme
 import com.yaabelozerov.tribede.ui.util.Nav
 import com.yaabelozerov.tribede.ui.viewmodels.AuthViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        var shouldShowCamera: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+        var hasCameraPermission: Boolean = false
+        val cameraPermissionRequestLauncher: ActivityResultLauncher<String> =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+                if (isGranted) {
+                    // Permission granted: proceed with opening the camera
+                    hasCameraPermission = true
+                    shouldShowCamera.update { true }
+                } else {
+                    // Permission denied: inform the user to enable it through settings
+                    Toast.makeText(
+                        this,
+                        "Разрешите доступ к камере (пожалуйста)",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
 
         setContent {
             val token by Application.dataStore.getToken().collectAsState(null)
