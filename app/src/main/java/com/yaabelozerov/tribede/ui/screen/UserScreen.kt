@@ -2,10 +2,13 @@ package com.yaabelozerov.tribede.ui.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -36,7 +39,10 @@ fun UserScreen(vm: UserViewModel) {
   val scope = rememberCoroutineScope()
   uiState.user?.let { userInfo ->
     LazyColumn(
-        modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
           item {
             Text("Профиль", style = MaterialTheme.typography.headlineMedium)
             AsyncImage(
@@ -53,8 +59,9 @@ fun UserScreen(vm: UserViewModel) {
           if (userInfo.books != null) {
             userInfo.books?.let {
               item {
-                Row {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                   Text("Мои брониирования")
+                    Spacer(Modifier.size(8.dp))
                   Box(modifier = Modifier.weight(1f).height(2.dp).background(color = Color.Gray))
                 }
               }
@@ -62,8 +69,9 @@ fun UserScreen(vm: UserViewModel) {
                 BookCard(it)
               }
               item {
-                Row {
-                  Text("История ")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                  Text("История")
+                    Spacer(Modifier.size(8.dp))
                   Box(modifier = Modifier.weight(1f).height(2.dp).background(color = Color.Gray))
                 }
               }
