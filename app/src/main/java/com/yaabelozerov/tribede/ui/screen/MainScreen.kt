@@ -39,6 +39,7 @@ import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
@@ -122,8 +123,8 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                     chosenSeat = null
                     vm.resetModal()
                     datePickerState.selectedDateMillis = Instant.now().toEpochMilli()
-                }) {
-                    Column {
+                }, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                         Column(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -195,7 +196,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                             }
                             DatePicker(
                                 datePickerState, colors = DatePickerDefaults.colors(
-                                    containerColor = MaterialTheme.colorScheme.background
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainer
                                 ), title = null
                             )
                         } else {
@@ -205,7 +206,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                                 }
                                 DatePicker(
                                     datePickerState, colors = DatePickerDefaults.colors(
-                                        containerColor = MaterialTheme.colorScheme.background
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainer
                                     ), title = null
                                 )
                             }

@@ -52,7 +52,7 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
             url("/book/$id")
             header("Authorization", "Bearer $token")
             seatId?.let {
-                parameter("seatId", it)
+                parameter("seat-id", it)
             }
         }.body()
     }
@@ -65,12 +65,13 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
     }
 
     suspend fun postBook(token: String, body: BookRequestDTO, zoneId: String, seatId: String?): Result<String> = runCatching {
+        println()
         httpClient.post {
             url("/book/$zoneId")
             header("Authorization", "Bearer $token")
             setBody(body)
             seatId?.let {
-                parameter("seatId", it)
+                parameter("seat-id", it)
             }
         }.body()
     }
