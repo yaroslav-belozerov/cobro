@@ -63,7 +63,7 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
         }.body()
     }
 
-    suspend fun postBook(token: String, body: BookRequestDTO, zoneId: String, seatId: String?) = runCatching {
+    suspend fun postBook(token: String, body: BookRequestDTO, zoneId: String, seatId: String?): Result<String> = runCatching {
         httpClient.post {
             url("/book/$zoneId")
             header("Authorization", "Bearer $token")
@@ -71,6 +71,6 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
             seatId?.let {
                 parameter("seatId", it)
             }
-        }
+        }.body()
     }
 }
