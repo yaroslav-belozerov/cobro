@@ -12,9 +12,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.ZoneId
 
 data class UserState(
-    val user: UserDto? = null
+    val user: UserDto? = null,
+    val qrString: String? = null
 )
 
 class UserViewModel(
@@ -30,6 +32,18 @@ class UserViewModel(
 
     fun onPickMedia() {
 
+    }
+
+    fun getQr(bookId: String) {
+        viewModelScope.launch {
+            dataStore.getToken().first().let { token ->
+                apiClient.getQrCode(token, bookId.toString()).getOrNull()?.let {
+                    _state.update { state ->
+                        state.copy(qrString = it.code)
+                    }
+                }
+            }
+        }
     }
 
     fun fetchUserInfo() {
