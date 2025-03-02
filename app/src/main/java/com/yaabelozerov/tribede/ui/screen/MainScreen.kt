@@ -84,12 +84,11 @@ fun MainScreen(vm: MainViewModel = viewModel()) {
                             } ?: Instant.now(), ZoneId.systemDefault())
 
 
-                            Timeline(
-                                state.currentBookings.filter { true
-                                   // it.start.isBefore(chosenDate) && it.end.isAfter(chosenDate)
-                                                             },
-                            )
+
                         }
+                        Timeline(
+                            state.currentBookings.filter { it.start.toLocalDate() == chosenDate.toLocalDate() },
+                        )
                         DatePicker(datePickerState)
                     }
                 }
