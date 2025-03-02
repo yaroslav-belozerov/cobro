@@ -22,3 +22,10 @@ data class ZoneDto(
 data class ZoneTag(
     val tag: Long,
 )
+
+@Serializable
+data class SeatDto(
+    val id: String,
+    val x: Float,
+    val y: Float
+)

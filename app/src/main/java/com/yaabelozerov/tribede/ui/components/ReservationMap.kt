@@ -24,18 +24,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.yaabelozerov.tribede.data.model.SeatDto
 import com.yaabelozerov.tribede.data.model.ZoneDto
 
 enum class SpaceType {
     OFFICE, TALKROOM, OPEN, MISC
 }
 
-data class Seat(
-    val id: Long,
-    val position: Pos,
-)
-
-fun ZoneDto.toSpace(): CoworkingSpace {
+fun ZoneDto.toSpace(seats: List<SeatDto>): CoworkingSpace {
     val spaceType =
         SpaceType.entries.find { it.name.lowercase() == type.lowercase() } ?: SpaceType.MISC
     return CoworkingSpace(
@@ -53,7 +49,8 @@ fun ZoneDto.toSpace(): CoworkingSpace {
         position = Pos(xCoordinate, yCoordinate, width, height),
         tags = zoneTags.map { it.tag.toString() },
         isCompanyRestricted = cls != null,
-        description = description
+        description = description,
+        seats = seats
     )
 }
 
@@ -67,7 +64,7 @@ data class CoworkingSpace(
     val color: Color,
     val position: Pos,
     val tags: List<String>,
-    val seats: List<Seat>? = null,
+    val seats: List<SeatDto>,
     val isCompanyRestricted: Boolean,
 )
 
@@ -127,14 +124,12 @@ fun ReservationMap(
                         )
                     )
                 }
-                if (it.seats != null) {
-                    it.seats.forEach { seat ->
-                        drawCircle(
-                            color = Color.Blue,
-                            center = Offset(seat.position.x * width, seat.position.y * height),
-                            radius = 5.dp.toPx()
-                        ) // TODO хули не грузятся
-                    }
+                it.seats.forEach { seat ->
+                    drawCircle(
+                        color = Color.Blue,
+                        center = Offset(seat.x * width, seat.y * height),
+                        radius = 5.dp.toPx()
+                    ) // TODO хули не грузятся
                 }
             }
         }
