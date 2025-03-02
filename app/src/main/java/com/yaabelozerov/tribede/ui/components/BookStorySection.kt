@@ -4,9 +4,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EventAvailable
 import androidx.compose.material.icons.filled.HourglassTop
+import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,7 +28,7 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 @Composable
-fun BookCard(model: BookResponseDTO) {
+fun BookCard(model: BookResponseDTO, onClick: (String) -> Unit = {}) {
     val startDateTime = LocalDateTime.ofInstant(Instant.parse(model.start), ZoneId.systemDefault())
     val endDateTime = LocalDateTime.ofInstant(Instant.parse(model.end), ZoneId.systemDefault())
     var minutes = ChronoUnit.MINUTES.between(startDateTime, endDateTime)
@@ -56,6 +62,12 @@ fun BookCard(model: BookResponseDTO) {
             }
         }
         Spacer(Modifier.weight(1f))
+        if (status == BookStatus.PENDING) {
+            FloatingActionButton(onClick = { onClick(model.id) }, shape = RoundedCornerShape(4.dp),
+                content = { Icon(Icons.Filled.QrCode, null) },
+                elevation = FloatingActionButtonDefaults.elevation(0.dp))
+        }
+        Spacer(Modifier.width(16.dp))
         if (minutes == 0L) {
             Text("$hours ч", style = MaterialTheme.typography.headlineLarge)
         } else {

@@ -21,7 +21,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +35,7 @@ import coil3.compose.AsyncImage
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.domain.model.BookStatus
 import com.yaabelozerov.tribede.ui.components.BookCard
+import com.yaabelozerov.tribede.ui.components.QrShowWidget
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
 import kotlinx.coroutines.launch
 
@@ -39,6 +43,14 @@ import kotlinx.coroutines.launch
 fun UserScreen(vm: UserViewModel) {
     val uiState by vm.state.collectAsState()
     val scope = rememberCoroutineScope()
+    var showQrDialog by remember { mutableStateOf(false) }
+
+    if (showQrDialog) {
+        QrShowWidget(
+            onDismissRequest = { showQrDialog = false},
+            qrCode = uiState.qrString
+        )
+    }
     uiState.user?.let { userInfo ->
         LazyColumn(
             modifier = Modifier
@@ -74,12 +86,13 @@ fun UserScreen(vm: UserViewModel) {
                                 .weight(1f)
                                 .height(2.dp)
                                 .background(color = Color.Gray)
+                                .padding(top = 4.dp)
                         )
                     }
                 }
                 val pending = userInfo.books.filter { BookStatus.entries[it.status] == BookStatus.PENDING }
                 itemsIndexed(pending) { index, book ->
-                    BookCard(book)
+                    BookCard(book, { vm.getQr(it); showQrDialog = true })
                     if (index != pending.size - 1) {
                         Spacer(Modifier.size(12.dp))
                         HorizontalDivider()
@@ -96,11 +109,12 @@ fun UserScreen(vm: UserViewModel) {
                                 .weight(1f)
                                 .height(2.dp)
                                 .background(color = Color.Gray)
+                                .padding(top = 4.dp)
                         )
                     }
                 }
                 items(userInfo.books.filter { BookStatus.entries[it.status] != BookStatus.PENDING }) {
-                    BookCard(it)
+                    BookCard(it,  { vm.getQr(it) })
                 }
             } ?: item {
                 Text(
