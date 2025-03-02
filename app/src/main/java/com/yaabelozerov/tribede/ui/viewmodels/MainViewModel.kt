@@ -74,4 +74,7 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
         }
     }
 
+    fun resetModal() {
+        _state.update { it.copy(currentBookings = emptyList()) }
+    }
 }

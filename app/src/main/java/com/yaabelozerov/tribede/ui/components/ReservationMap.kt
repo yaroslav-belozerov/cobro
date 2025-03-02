@@ -87,102 +87,62 @@ fun ReservationMap(
     val bgColor = MaterialTheme.colorScheme.onBackground
     var width by remember { mutableIntStateOf(0) }
     var height by remember { mutableIntStateOf(0) }
-    var sWidth by remember { mutableIntStateOf(0) }
-    var sHeight by remember { mutableIntStateOf(0) }
     var isSeatView by remember { mutableStateOf(false) }
-    val density = LocalDensity.current
-    AnimatedContent(
-        isSeatView && chosen != null,
-        transitionSpec = { fadeIn() togetherWith fadeOut() },
-        modifier = Modifier.fillMaxSize()
-    ) { viewSeats ->
-        if (viewSeats) {
-            chosen?.let { space ->
-                Canvas(Modifier
-                    .padding(24.dp)
-                    .aspectRatio(space.position.width / space.position.height)
-                    .height(with(density) { height.toDp() })
-                    .clip(MaterialTheme.shapes.large)
-                    .background(space.color)
-                    .onPlaced {
-                        sWidth = it.size.width
-                        sHeight = it.size.height
-                    }
-                    .clickable {
-                        isSeatView = false
-                        onClick(space)
-                    }) {
-                    space.seats.forEach { seat ->
-                        drawCircle(
-                            color = Color.Blue, center = Offset(
-                                (seat.x - space.position.x) * sWidth / space.position.width,
-                                (seat.y - space.position.y) * sHeight / space.position.height
-                            ), radius = 15.dp.toPx()
-                        )
-                    }
-                }
-            }
-        } else {
-            Canvas(Modifier
-                .fillMaxWidth()
-                .aspectRatio(1.3f)
-                .padding(horizontal = 12.dp)
-                .onPlaced {
-                    width = it.size.width
-                    height = it.size.width
-                }
-                .pointerInput(Unit) {
-                    detectTapGestures(onTap = { offset ->
-                        val x = offset.x / width
-                        val y = offset.y / height
-                        println("$x, $y")
-                        list.forEach {
-                            if (it.position.x <= x && x <= (it.position.width + it.position.x) && it.position.y <= y && y <= (it.position.height + it.position.y)) {
-                                if (it.type != SpaceType.MISC) {
-                                    if (it.type == SpaceType.OFFICE) {
-                                        isSeatView = true
-                                    }
-                                    onClick(it)
-                                }
-                            }
-                        }
-                    })
-                }) {
+    Canvas(Modifier
+        .fillMaxWidth()
+        .aspectRatio(1.3f)
+        .padding(horizontal = 12.dp)
+        .onPlaced {
+            width = it.size.width
+            height = it.size.width
+        }
+        .pointerInput(Unit) {
+            detectTapGestures(onTap = { offset ->
+                val x = offset.x / width
+                val y = offset.y / height
+                println("$x, $y")
                 list.forEach {
-                    val color = it.color
-                    drawRoundRect(
-                        color,
-                        cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()),
-                        topLeft = Offset(
-                            (it.position.x + 0.005f) * width, (it.position.y + 0.005f) * height
-                        ),
-                        size = Size(
-                            width = (it.position.width - 0.01f) * width,
-                            height = (it.position.height - 0.01f) * height
-                        )
-                    )
-                    if (it == chosen) {
-                        drawRoundRect(
-                            bgColor,
-                            style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round),
-                            cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
-                            topLeft = Offset(
-                                (it.position.x + 0.005f) * width, (it.position.y + 0.005f) * height
-                            ),
-                            size = Size(
-                                width = (it.position.width - 0.01f) * width,
-                                height = (it.position.height - 0.01f) * height
-                            )
-                        )
-                    }
-                    it.seats.forEach { seat ->
-                        drawCircle(
-                            color = Color.Blue,
-                            center = Offset(seat.x * width, seat.y * height),
-                            radius = 5.dp.toPx()
-                        ) // TODO хули не грузятся
+                    if (it.position.x <= x && x <= (it.position.width + it.position.x) && it.position.y <= y && y <= (it.position.height + it.position.y)) {
+                        if (it.type != SpaceType.MISC) {
+                            if (it.type == SpaceType.OFFICE) {
+                                isSeatView = true
+                            }
+                            onClick(it)
+                        }
                     }
                 }
+            })
+        }) {
+        list.forEach {
+            val color = it.color
+            drawRoundRect(
+                color, cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()), topLeft = Offset(
+                    (it.position.x + 0.005f) * width, (it.position.y + 0.005f) * height
+                ), size = Size(
+                    width = (it.position.width - 0.01f) * width,
+                    height = (it.position.height - 0.01f) * height
+                )
+            )
+            if (it == chosen) {
+                drawRoundRect(
+                    bgColor,
+                    style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round),
+                    cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
+                    topLeft = Offset(
+                        (it.position.x + 0.005f) * width, (it.position.y + 0.005f) * height
+                    ),
+                    size = Size(
+                        width = (it.position.width - 0.01f) * width,
+                        height = (it.position.height - 0.01f) * height
+                    )
+                )
+            }
+            it.seats.forEach { seat ->
+                drawCircle(
+                    color = Color.Blue,
+                    center = Offset(seat.x * width, seat.y * height),
+                    radius = 5.dp.toPx()
+                ) // TODO хули не грузятся
             }
         }
     }
