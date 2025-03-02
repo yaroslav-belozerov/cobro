@@ -32,7 +32,7 @@ class UserViewModel(
 
     }
 
-    private fun fetchUserInfo() {
+    fun fetchUserInfo() {
         viewModelScope.launch {
             dataStore.getToken().distinctUntilChanged().collect {
                 it.takeIf { it.isNotEmpty() }?.let {

@@ -50,13 +50,14 @@ import com.yaabelozerov.tribede.ui.components.ReservationMap
 import com.yaabelozerov.tribede.ui.components.SpaceType
 import com.yaabelozerov.tribede.ui.components.Timeline
 import com.yaabelozerov.tribede.ui.viewmodels.MainViewModel
+import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(vm: MainViewModel = viewModel()) {
+fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewModel()) {
     val state by vm.state.collectAsState()
     var isBookingDialogOpen by remember { mutableStateOf(false) }
     var chosenDate by remember { mutableStateOf(LocalDateTime.now()) }
@@ -253,7 +254,9 @@ fun MainScreen(vm: MainViewModel = viewModel()) {
                                     req = BookRequestDTO(
                                         from = "$from:00.000Z", to = "$to:00.000Z", description = description
                                     ), zoneId = chosenZone.id, seatId = null
-                                )
+                                ) {
+                                    userVm.fetchUserInfo()
+                                }
                                 isBookingDialogOpen = false
                             },
                             enabled = enabled,
