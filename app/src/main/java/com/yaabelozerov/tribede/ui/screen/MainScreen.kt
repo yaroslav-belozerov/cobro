@@ -71,16 +71,16 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = Instant.now().toEpochMilli()
     )
-    val bookingsForToday =
-        remember(state.currentBookings) { state.currentBookings.filter { it.start.toLocalDate() == chosenDate.toLocalDate() } }
+    val bookingsForToday = remember(state.currentBookings, datePickerState.selectedDateMillis) {
+        state.currentBookings.filter {
+            it.start.toLocalDate() == LocalDateTime.ofInstant(datePickerState.selectedDateMillis?.let {
+                Instant.ofEpochMilli(it)
+            } ?: Instant.now(), ZoneId.systemDefault()).toLocalDate()
+        }
+    }
     state.zones.takeIf { it.isNotEmpty() }?.let { zones ->
         var chosenZone by remember { mutableStateOf(zones.first()) }
         var expanded by remember { mutableStateOf(false) }
-        LaunchedEffect(datePickerState.selectedDateMillis) {
-            chosenDate = LocalDateTime.ofInstant(datePickerState.selectedDateMillis?.let {
-                Instant.ofEpochMilli(it)
-            } ?: Instant.now(), ZoneId.systemDefault())
-        }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
