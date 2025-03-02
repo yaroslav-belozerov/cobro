@@ -1,5 +1,6 @@
 package com.yaabelozerov.tribede.data
 
+import com.yaabelozerov.tribede.data.model.AdminBookResponse
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.BookResponseDTO
 import com.yaabelozerov.tribede.data.model.LoginDto
@@ -11,6 +12,7 @@ import com.yaabelozerov.tribede.data.model.UserDto
 import com.yaabelozerov.tribede.data.model.ZoneDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
@@ -86,6 +88,25 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
             url("/book/$bookId/qr")
             header("Authorization", "Bearer $token")
         }.body()
+    }
+
+    suspend fun getAdminBookings(token: String): Result<List<AdminBookResponse>> = runCatching {
+        httpClient.get {
+            url("/admin/active")
+            header("Authorization", "Bearer $token")
+        }.body()
+    }
+
+    suspend fun deleteBook(token: String, id: String) {
+        try {
+            httpClient.delete {
+                url("/book/$id")
+                header("Authorization", "Bearer $token")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
     }
 
     suspend fun uploadImage(file: File, token: String): Result<String> = runCatching {

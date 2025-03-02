@@ -39,6 +39,7 @@ import com.yaabelozerov.tribede.ui.components.MyButton
 import com.yaabelozerov.tribede.ui.screen.AuthScreen
 import com.yaabelozerov.tribede.ui.theme.AppTheme
 import com.yaabelozerov.tribede.ui.util.Nav
+import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
 import com.yaabelozerov.tribede.ui.viewmodels.AuthViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -75,6 +76,8 @@ class MainActivity : ComponentActivity() {
             val authVm: AuthViewModel = viewModel()
             val authState by authVm.state.collectAsState()
             val scope = rememberCoroutineScope()
+
+            val adminVM: AdminViewModel = viewModel()
 
             AppTheme {
                 if (token == "") {
