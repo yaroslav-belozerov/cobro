@@ -12,7 +12,7 @@ class Application : Application() {
   }
 
   companion object {
-    private lateinit var app: Application
+    lateinit var app: Application
 
     val dataStore by lazy { DataStore(app) }
     val apiClient by lazy { ApiClient(Net.apiClient) }

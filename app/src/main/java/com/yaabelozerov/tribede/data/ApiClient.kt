@@ -94,17 +94,17 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
                 MultiPartFormDataContent(
                     formData {
                         append(
-                            file.name,
+                            "file",
                             file.readBytes(),
                             Headers.build {
                                 append("Content-Type", "image/jpeg")
                                 append(HttpHeaders.ContentDisposition, "filename=${file.name}")
-                                append("Authorization", "Bearer $token")
                             }
                         )
                     }
                 )
             )
+            header("Authorization", "Bearer $token")
         }.body()
     }
 }

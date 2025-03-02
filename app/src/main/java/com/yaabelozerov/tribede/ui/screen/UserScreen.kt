@@ -1,12 +1,17 @@
 package com.yaabelozerov.tribede.ui.screen
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -45,6 +50,15 @@ fun UserScreen(vm: UserViewModel) {
     val scope = rememberCoroutineScope()
     var showQrDialog by remember { mutableStateOf(false) }
 
+    val picker =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            uri?.let { uriNotNull ->
+                scope.launch {
+                    vm.onMediaPicker(Application.app.applicationContext, uriNotNull)
+                }
+            }
+        }
+
     if (showQrDialog) {
         QrShowWidget(
             onDismissRequest = { showQrDialog = false},
@@ -67,7 +81,9 @@ fun UserScreen(vm: UserViewModel) {
                     modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape)
-                        .clickable { vm.onPickMedia() },
+                        .clickable {
+                            picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        },
                     contentScale = ContentScale.Crop
                 )
             }
@@ -81,13 +97,17 @@ fun UserScreen(vm: UserViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Мои брониирования")
                         Spacer(Modifier.size(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(2.dp)
-                                .background(color = Color.Gray)
-                                .padding(top = 4.dp)
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Spacer(Modifier.height(4.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(2.dp)
+                                    .background(color = Color.Gray)
+
+                            )
+                        }
+
                     }
                 }
                 val pending = userInfo.books.filter { BookStatus.entries[it.status] == BookStatus.PENDING }
@@ -104,13 +124,16 @@ fun UserScreen(vm: UserViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("История")
                         Spacer(Modifier.size(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(2.dp)
-                                .background(color = Color.Gray)
-                                .padding(top = 4.dp)
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Spacer(Modifier.height(4.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(2.dp)
+                                    .background(color = Color.Gray)
+
+                            )
+                        }
                     }
                 }
                 items(userInfo.books.filter { BookStatus.entries[it.status] != BookStatus.PENDING }) {

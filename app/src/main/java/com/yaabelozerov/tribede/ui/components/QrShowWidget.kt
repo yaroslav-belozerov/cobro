@@ -41,6 +41,9 @@ fun QrShowWidget(onDismissRequest: () -> Unit, qrCode: String?) {
                         }
                     }
                 }
+                if (qrCode != null) {
+                    Text(qrCode, style = MaterialTheme.typography.titleLarge)
+                }
                 Text("Покажите этот код сотруднику коворкинга, чтобы войти",
                     modifier = Modifier.padding(start = 8.dp))
                 Row {
