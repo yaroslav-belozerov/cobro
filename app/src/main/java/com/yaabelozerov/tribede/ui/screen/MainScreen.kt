@@ -2,6 +2,7 @@ package com.yaabelozerov.tribede.ui.screen
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -9,6 +10,9 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -49,12 +53,11 @@ fun MainScreen(vm: MainViewModel = viewModel()) {
         var chosenDate by remember { mutableStateOf(LocalDateTime.now()) }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceAround,
-            modifier = Modifier.verticalScroll(rememberScrollState())
+            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
         ) {
             Spacer(Modifier.size(24.dp))
             Text("Забронировать", style = MaterialTheme.typography.headlineMedium)
-            Column {
+            Column(Modifier.fillMaxWidth()) {
                 ReservationMap(
                     if (expanded) chosenBook else null, {
                     if (chosenBook == it) {
@@ -65,8 +68,6 @@ fun MainScreen(vm: MainViewModel = viewModel()) {
                         vm.getBookings(zoneId = it.id, seatId = null)
                         println(state.currentBookings)
                     }
-
-
                 }, zones)
                 AnimatedVisibility(
                     expanded,

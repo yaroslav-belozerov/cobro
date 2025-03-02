@@ -59,7 +59,7 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
                         state.copy(currentBookings = it.map { it.toDomainModel() })
                     }
                     Log.d("getBook", "getBookings: $it")
-                }
+                } ?: _state.update { it.copy(currentBookings = emptyList()) }
                 result.exceptionOrNull()?.printStackTrace()
             }
         }

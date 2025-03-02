@@ -104,6 +104,7 @@ class MainActivity : ComponentActivity() {
                         }) { innerPadding ->
                             App(
                                 Modifier
+                                    .fillMaxSize()
                                     .padding(innerPadding)
                                     .windowInsetsPadding(WindowInsets.ime), navCtrl
                             )
