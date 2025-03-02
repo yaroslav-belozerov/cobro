@@ -22,12 +22,6 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 @Composable
-fun BookStorySection() {
-
-
-}
-
-@Composable
 fun BookCard(model: Book) {
     val startDateTime = LocalDateTime.ofInstant(Instant.parse(model.start), ZoneId.systemDefault())
     val endDateTime = LocalDateTime.ofInstant(Instant.parse(model.end), ZoneId.systemDefault())
@@ -40,10 +34,10 @@ fun BookCard(model: Book) {
 
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(model.roomName, style = MaterialTheme.typography.titleMedium)
-            model.seat?.let {
-                Text(it, style = MaterialTheme.typography.titleSmall)
-            }
+            Text(model.zoneName, style = MaterialTheme.typography.titleMedium)
+//            model.seat?.let {
+//                Text(it, style = MaterialTheme.typography.titleSmall)
+//            }
             Text("${startDateTime.toLocalDate()} в ${startDateTime.hour}:${startDateTime.minute}")
 
             if (status == BookStatus.PENDING) {

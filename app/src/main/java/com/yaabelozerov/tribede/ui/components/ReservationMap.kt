@@ -1,9 +1,6 @@
 package com.yaabelozerov.tribede.ui.components
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -11,18 +8,11 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,39 +31,38 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.findViewTreeViewModelStoreOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yaabelozerov.tribede.data.model.SeatDto
 import com.yaabelozerov.tribede.data.model.ZoneDto
-import kotlin.math.max
 
 enum class SpaceType {
-    OFFICE, TALKROOM, OPEN, MISC
+  OFFICE,
+  TALKROOM,
+  OPEN,
+  MISC
 }
 
 fun ZoneDto.toSpace(seats: List<SeatDto>): CoworkingSpace {
-    val spaceType =
-        SpaceType.entries.find { it.name.lowercase() == type.lowercase() } ?: SpaceType.MISC
-    return CoworkingSpace(
-        id = id,
-        name = name,
-        currentPeople = 0,
-        maxPeople = capacity,
-        type = spaceType,
-        color = when (spaceType) {
+  val spaceType =
+      SpaceType.entries.find { it.name.lowercase() == type.lowercase() } ?: SpaceType.MISC
+  return CoworkingSpace(
+      id = id,
+      name = name,
+      currentPeople = 0,
+      maxPeople = capacity,
+      type = spaceType,
+      color =
+          when (spaceType) {
             SpaceType.OFFICE -> Color(android.graphics.Color.parseColor("#CCDBDC"))
             SpaceType.TALKROOM -> Color(android.graphics.Color.parseColor("#003249"))
             SpaceType.OPEN -> Color(android.graphics.Color.parseColor("#80CED7"))
             SpaceType.MISC -> Color(android.graphics.Color.parseColor("#5F6062"))
-        },
-        position = Pos(xCoordinate, yCoordinate, width, height),
-        tags = zoneTags.map { it.tag.toString() },
-        isCompanyRestricted = cls != null,
-        description = description,
-        seats = seats
-    )
+          },
+      position = Pos(xCoordinate, yCoordinate, width, height),
+      tags = zoneTags.map { it.tag.toString() },
+      isCompanyRestricted = cls != null,
+      description = description,
+      seats = seats)
 }
 
 data class CoworkingSpace(
@@ -98,109 +87,115 @@ fun ReservationMap(
     onClick: (CoworkingSpace) -> Unit,
     list: List<CoworkingSpace>,
 ) {
-    val bgColor = MaterialTheme.colorScheme.onBackground
-    var width by remember { mutableIntStateOf(0) }
-    var height by remember { mutableIntStateOf(0) }
-    var sWidth by remember { mutableIntStateOf(0) }
-    var sHeight by remember { mutableIntStateOf(0) }
-    var isSeatView by remember { mutableStateOf(false) }
-    val density = LocalDensity.current
-    AnimatedContent(isSeatView && chosen != null, transitionSpec = {
-        fadeIn() togetherWith fadeOut()
-    }, modifier = Modifier.fillMaxSize()) { viewSeats ->
+  val bgColor = MaterialTheme.colorScheme.onBackground
+  var width by remember { mutableIntStateOf(0) }
+  var height by remember { mutableIntStateOf(0) }
+  var sWidth by remember { mutableIntStateOf(0) }
+  var sHeight by remember { mutableIntStateOf(0) }
+  var isSeatView by remember { mutableStateOf(false) }
+  val density = LocalDensity.current
+  AnimatedContent(
+      isSeatView && chosen != null,
+      transitionSpec = { fadeIn() togetherWith fadeOut() },
+      modifier = Modifier.fillMaxSize()) { viewSeats ->
         if (viewSeats) {
-            chosen?.let { space ->
-                Canvas(Modifier
-                    .padding(24.dp)
+          chosen?.let { space ->
+            Canvas(
+                Modifier.padding(24.dp)
                     .aspectRatio(space.position.width / space.position.height)
                     .height(with(density) { height.toDp() })
                     .clip(MaterialTheme.shapes.large)
                     .background(space.color)
                     .onPlaced {
-                        sWidth = it.size.width
-                        sHeight = it.size.height
+                      sWidth = it.size.width
+                      sHeight = it.size.height
                     }
-                    .clickable { isSeatView = false; onClick(space) }) {
-
-                    space.seats.forEach { seat ->
-                        drawCircle(
-                            color = Color.Blue, center = Offset(
+                    .clickable {
+                      isSeatView = false
+                      onClick(space)
+                    }) {
+                  space.seats.forEach { seat ->
+                    drawCircle(
+                        color = Color.Blue,
+                        center =
+                            Offset(
                                 (seat.x - space.position.x) * sWidth / space.position.width,
-                                (seat.y - space.position.y) * sHeight / space.position.height
-                            ), radius = 15.dp.toPx()
-                        )
-                    }
+                                (seat.y - space.position.y) * sHeight / space.position.height),
+                        radius = 15.dp.toPx())
+                  }
                 }
-            }
+          }
         } else {
-            Canvas(Modifier
-                .fillMaxWidth()
-                .aspectRatio(1.3f)
-                .padding(horizontal = 12.dp)
-                .onPlaced {
+          Canvas(
+              Modifier.fillMaxWidth()
+                  .aspectRatio(1.3f)
+                  .padding(horizontal = 12.dp)
+                  .onPlaced {
                     width = it.size.width
                     height = it.size.width
-                }
-                .pointerInput(Unit) {
-                    detectTapGestures(onTap = { offset ->
-                        val x = offset.x / width
-                        val y = offset.y / height
-                        println("$x, $y")
-                        list.forEach {
-                            if (it.position.x <= x && x <= (it.position.width + it.position.x) && it.position.y <= y && y <= (it.position.height + it.position.y)) {
-                                if (it.type != SpaceType.MISC) {
-                                    if (it.type == SpaceType.OFFICE) {
-                                        isSeatView = true
-                                    }
-                                    onClick(it)
+                  }
+                  .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = { offset ->
+                          val x = offset.x / width
+                          val y = offset.y / height
+                          println("$x, $y")
+                          list.forEach {
+                            if (it.position.x <= x &&
+                                x <= (it.position.width + it.position.x) &&
+                                it.position.y <= y &&
+                                y <= (it.position.height + it.position.y)) {
+                              if (it.type != SpaceType.MISC) {
+                                if (it.type == SpaceType.OFFICE) {
+                                  isSeatView = true
                                 }
+                                onClick(it)
+                              }
                             }
-                        }
-                    })
-                }) {
+                          }
+                        })
+                  }) {
                 list.forEach {
-                    val color = it.color
+                  val color = it.color
+                  drawRoundRect(
+                      color,
+                      cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()),
+                      topLeft =
+                          Offset(
+                              (it.position.x + 0.005f) * width, (it.position.y + 0.005f) * height),
+                      size =
+                          Size(
+                              width = (it.position.width - 0.01f) * width,
+                              height = (it.position.height - 0.01f) * height))
+                  if (it == chosen) {
                     drawRoundRect(
-                        color,
-                        cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()),
-                        topLeft = Offset(
-                            (it.position.x + 0.005f) * width, (it.position.y + 0.005f) * height
-                        ),
-                        size = Size(
-                            width = (it.position.width - 0.01f) * width,
-                            height = (it.position.height - 0.01f) * height
-                        )
-                    )
-                    if (it == chosen) {
-                        drawRoundRect(
-                            bgColor,
-                            style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round),
-                            cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
-                            topLeft = Offset(
-                                (it.position.x + 0.005f) * width, (it.position.y + 0.005f) * height
-                            ),
-                            size = Size(
+                        bgColor,
+                        style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round),
+                        cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
+                        topLeft =
+                            Offset(
+                                (it.position.x + 0.005f) * width,
+                                (it.position.y + 0.005f) * height),
+                        size =
+                            Size(
                                 width = (it.position.width - 0.01f) * width,
-                                height = (it.position.height - 0.01f) * height
-                            )
-                        )
-                    }
-                    it.seats.forEach { seat ->
-                        drawCircle(
-                            color = Color.Blue,
-                            center = Offset(seat.x * width, seat.y * height),
-                            radius = 5.dp.toPx()
-                        ) // TODO хули не грузятся
-                    }
+                                height = (it.position.height - 0.01f) * height))
+                  }
+                  it.seats.forEach { seat ->
+                    drawCircle(
+                        color = Color.Blue,
+                        center = Offset(seat.x * width, seat.y * height),
+                        radius = 5.dp.toPx()) // TODO хули не грузятся
+                  }
                 }
-            }
+              }
         }
-    }
+      }
 }
 
-//@Preview
-//@Composable
-//fun ReservationMapPreview() {
+// @Preview
+// @Composable
+// fun ReservationMapPreview() {
 //    val lst = listOf(
 //        CoworkingSpace(
 //            id = "0",
@@ -362,4 +357,4 @@ fun ReservationMap(
 //    ReservationMap(
 //        id, { id = it }, lst
 //    )
-//}
+// }

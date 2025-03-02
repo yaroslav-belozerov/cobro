@@ -27,6 +27,5 @@ data class Book(
     val user: String,
     val description: String,
     val status: Int,
-    val roomName: String,
-    val seat: String?
+    val zoneName: String,
 )
