@@ -66,14 +66,15 @@ fun Timeline(
 
             // Отображение бронирований
             bookings.forEach { booking ->
-                val startOffset = ((booking.start.hour - startHour) * 60) * minuteWidth
+                val startMinutes = booking.start.hour * 60 + booking.start.minute
+                val endMinutes = booking.end.hour * 60 + booking.end.minute
+                val startOffset = (startMinutes - startHour * 60) * minuteWidth
                 val endOffset =
-                    ((booking.end.hour - startHour) * 60) * minuteWidth // поправка на timeZone
+                    (endMinutes - startHour * 60) * minuteWidth
                 Log.d("timeline 2", "startOffset: $startOffset, endOffset: $endOffset")
                 Log.d(
                     "timeline 3", "start hour: ${booking.start.hour}, end hour: ${booking.end.hour}"
                 )
-                // TODO timezone fix надо
                 Box(
                     modifier = Modifier
                         .offset(x = startOffset.dp, y = 10.dp)

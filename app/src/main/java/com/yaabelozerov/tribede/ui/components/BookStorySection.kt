@@ -38,7 +38,10 @@ fun BookCard(model: BookResponseDTO) {
 //            model.seat?.let {
 //                Text(it, style = MaterialTheme.typography.titleSmall)
 //            }
-            Text("${startDateTime.toLocalDate()} в ${startDateTime.hour}:${startDateTime.minute}")
+            Text("${startDateTime.toLocalDate()} в" +
+                    " ${startDateTime.hour.toString().padStart(2, '0')}:" +
+                    startDateTime.minute.toString().padStart(2, '0')
+            )
 
             if (status == BookStatus.PENDING) {
                 Row {

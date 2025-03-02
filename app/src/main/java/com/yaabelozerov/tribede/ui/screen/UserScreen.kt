@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -75,8 +77,15 @@ fun UserScreen(vm: UserViewModel) {
                         )
                     }
                 }
-                items(userInfo.books.filter { BookStatus.entries[it.status] == BookStatus.PENDING }) {
-                    BookCard(it)
+                val pending = userInfo.books.filter { BookStatus.entries[it.status] == BookStatus.PENDING }
+                itemsIndexed(pending) { index, book ->
+                    BookCard(book)
+                    if (index != pending.size - 1) {
+                        Spacer(Modifier.size(12.dp))
+                        HorizontalDivider()
+                        Spacer(Modifier.size(4.dp))
+                    }
+
                 }
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
