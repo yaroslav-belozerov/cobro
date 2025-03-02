@@ -1,6 +1,14 @@
 package com.yaabelozerov.tribede.ui.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -52,7 +60,7 @@ fun ZoneDto.toSpace(seats: List<SeatDto>): CoworkingSpace {
             SpaceType.OFFICE -> Color(android.graphics.Color.parseColor("#CCDBDC"))
             SpaceType.TALKROOM -> Color(android.graphics.Color.parseColor("#003249"))
             SpaceType.OPEN -> Color(android.graphics.Color.parseColor("#80CED7"))
-            SpaceType.MISC -> Color(android.graphics.Color.parseColor("#5F6062"))
+            SpaceType.MISC -> Color(android.graphics.Color.parseColor("#5F6062")).copy(0.1f)
         },
         position = Pos(xCoordinate, yCoordinate, width, height),
         tags = zoneTags.map { it.tag.toString() },
@@ -87,7 +95,7 @@ fun ReservationMap(
     val bgColor = MaterialTheme.colorScheme.onBackground
     var width by remember { mutableIntStateOf(0) }
     var height by remember { mutableIntStateOf(0) }
-    var isSeatView by remember { mutableStateOf(false) }
+
     Canvas(Modifier
         .fillMaxWidth()
         .aspectRatio(1.3f)
@@ -104,9 +112,6 @@ fun ReservationMap(
                 list.forEach {
                     if (it.position.x <= x && x <= (it.position.width + it.position.x) && it.position.y <= y && y <= (it.position.height + it.position.y)) {
                         if (it.type != SpaceType.MISC) {
-                            if (it.type == SpaceType.OFFICE) {
-                                isSeatView = true
-                            }
                             onClick(it)
                         }
                     }
@@ -116,7 +121,7 @@ fun ReservationMap(
         list.forEach {
             val color = it.color
             drawRoundRect(
-                color, cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()), topLeft = Offset(
+                color, cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()), topLeft = Offset(
                     (it.position.x + 0.005f) * width, (it.position.y + 0.005f) * height
                 ), size = Size(
                     width = (it.position.width - 0.01f) * width,
@@ -129,17 +134,17 @@ fun ReservationMap(
                     style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round),
                     cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
                     topLeft = Offset(
-                        (it.position.x + 0.005f) * width, (it.position.y + 0.005f) * height
+                        (it.position.x + 0.01f) * width, (it.position.y + 0.01f) * height
                     ),
                     size = Size(
-                        width = (it.position.width - 0.01f) * width,
-                        height = (it.position.height - 0.01f) * height
+                        width = (it.position.width - 0.02f) * width,
+                        height = (it.position.height - 0.02f) * height
                     )
                 )
             }
             it.seats.forEach { seat ->
                 drawCircle(
-                    color = Color.Blue,
+                    color = Color(0xFFD1603D),
                     center = Offset(seat.x * width, seat.y * height),
                     radius = 5.dp.toPx()
                 ) // TODO хули не грузятся
