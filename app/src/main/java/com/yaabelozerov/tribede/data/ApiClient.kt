@@ -3,6 +3,7 @@ package com.yaabelozerov.tribede.data
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.BookResponseDTO
 import com.yaabelozerov.tribede.data.model.LoginDto
+import com.yaabelozerov.tribede.data.model.QrDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
 import com.yaabelozerov.tribede.data.model.SeatDto
 import com.yaabelozerov.tribede.data.model.TokenDto
@@ -71,6 +72,13 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
             seatId?.let {
                 parameter("seatId", it)
             }
+        }.body()
+    }
+
+    suspend fun getQrCode(token: String, zoneId: String): Result<QrDto> = runCatching {
+        httpClient.get {
+            url("/book/$zoneId/qr")
+            header("Authorization", "Bearer $token")
         }.body()
     }
 }
