@@ -201,7 +201,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                             )
                         } else {
                             if (chosenSeat != null) {
-                                Box(Modifier.padding(horizontal = 12.dp, vertical = 24.dp)) {
+                                if (chosenZone?.type != SpaceType.OPEN) Box(Modifier.padding(horizontal = 12.dp, vertical = 24.dp)) {
                                     Timeline(bookingsForToday)
                                 }
                                 DatePicker(
