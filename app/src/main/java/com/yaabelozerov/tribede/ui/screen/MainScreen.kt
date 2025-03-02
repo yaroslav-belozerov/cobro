@@ -76,8 +76,8 @@ fun MainScreen(vm: MainViewModel = viewModel()) {
                 ) {
                     val datePickerState = rememberDatePickerState()
                     Column {
-                        Column(modifier = Modifier.padding(horizontal = 12.dp)) {
-                            Text(chosenBook.name, style = MaterialTheme.typography.titleLarge)
+                        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            Text(chosenBook.name, style = MaterialTheme.typography.headlineSmall)
                             Text(chosenBook.description)
                             Text("0 / ${chosenBook.maxPeople}")
                             chosenDate = LocalDateTime.ofInstant(datePickerState.selectedDateMillis?.let {

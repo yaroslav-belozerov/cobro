@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -45,6 +47,7 @@ import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yaabelozerov.tribede.data.model.SeatDto
 import com.yaabelozerov.tribede.data.model.ZoneDto
+import kotlin.math.max
 
 enum class SpaceType {
     OFFICE, TALKROOM, OPEN, MISC
@@ -132,11 +135,11 @@ fun ReservationMap(
         } else {
             Canvas(Modifier
                 .fillMaxWidth()
-                .aspectRatio(1f)
+                .aspectRatio(1.3f)
                 .padding(horizontal = 12.dp)
                 .onPlaced {
                     width = it.size.width
-                    height = it.size.height
+                    height = it.size.width
                 }
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = { offset ->
@@ -145,10 +148,12 @@ fun ReservationMap(
                         println("$x, $y")
                         list.forEach {
                             if (it.position.x <= x && x <= (it.position.width + it.position.x) && it.position.y <= y && y <= (it.position.height + it.position.y)) {
-                                if (it.type == SpaceType.OFFICE) {
-                                    isSeatView = true
+                                if (it.type != SpaceType.MISC) {
+                                    if (it.type == SpaceType.OFFICE) {
+                                        isSeatView = true
+                                    }
+                                    onClick(it)
                                 }
-                                onClick(it)
                             }
                         }
                     })
