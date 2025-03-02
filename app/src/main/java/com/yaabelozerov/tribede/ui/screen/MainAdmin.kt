@@ -1,6 +1,7 @@
 package com.yaabelozerov.tribede.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +23,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,27 +37,38 @@ import com.yaabelozerov.tribede.domain.model.BookStatus
 import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
 
 @Composable
-fun MainAdminScreen(vm: AdminViewModel = viewModel()) {
+fun MainAdminScreen(vm: AdminViewModel = viewModel(), navigateToScan: () -> Unit) {
     val state = vm.state.collectAsState().value
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        item {
-            Spacer(Modifier.height(16.dp))
-            Text("Все бронирования", style = MaterialTheme.typography.headlineMedium)
-            Spacer(Modifier.height(16.dp))
-        }
-        itemsIndexed(state.bookings) { index, model ->
-            AdminBookCard(model, onDelete = vm::deleteBooking)
-            if (index != state.bookings.size - 1) {
-                Spacer(Modifier.size(12.dp))
-                HorizontalDivider()
-                Spacer(Modifier.size(4.dp))
+    Box {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
+                Spacer(Modifier.height(16.dp))
+                Text("Все бронирования", style = MaterialTheme.typography.headlineMedium)
+                Spacer(Modifier.height(16.dp))
             }
+            itemsIndexed(state.bookings) { index, model ->
+                AdminBookCard(model, onDelete = vm::deleteBooking)
+                if (index != state.bookings.size - 1) {
+                    Spacer(Modifier.size(12.dp))
+                    HorizontalDivider()
+                    Spacer(Modifier.size(4.dp))
+                }
+            }
+
+        }
+
+        LargeFloatingActionButton(
+            onClick = navigateToScan,
+            shape = RoundedCornerShape(6.dp),
+            modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 24.dp, end = 24.dp),
+        ) {
+            Icon(Icons.Filled.QrCode, contentDescription = null, modifier = Modifier.size(24.dp))
         }
     }
 }
@@ -65,7 +78,7 @@ fun AdminBookCard(
     model: AdminBookingUI,
     onMove: (String) -> Unit = {},
     onDelete: (String) -> Unit = {},
-    onScan: (String) -> Unit = {}
+
 ) {
     // только Pending или Active
 
@@ -104,8 +117,7 @@ fun AdminBookCard(
                     }
                 }
             }
-
-            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.width(16.dp))
             if (model.status != BookStatus.ACTIVE) {
                 FloatingActionButton(
                     onClick = { onMove(model.id) }, shape = RoundedCornerShape(6.dp),
@@ -115,12 +127,9 @@ fun AdminBookCard(
                     onClick = { onDelete(model.id) }, shape = RoundedCornerShape(6.dp),
                     elevation = FloatingActionButtonDefaults.elevation(0.dp)
                 ) { Icon(Icons.Filled.Cancel, null) }
-                FloatingActionButton(
-                    onClick = { onScan(model.id) }, shape = RoundedCornerShape(6.dp),
-                    elevation = FloatingActionButtonDefaults.elevation(0.dp)
-                ) { Icon(Icons.Filled.QrCode, null) }
+
             }
-            Spacer(Modifier.width(16.dp))
+
 
 
         }

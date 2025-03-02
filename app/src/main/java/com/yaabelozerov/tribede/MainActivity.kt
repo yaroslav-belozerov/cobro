@@ -6,10 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
@@ -77,8 +74,6 @@ class MainActivity : ComponentActivity() {
             val authState by authVm.state.collectAsState()
             val scope = rememberCoroutineScope()
 
-            val adminVM: AdminViewModel = viewModel()
-
             AppTheme {
                 if (token == "") {
                     AuthScreen(authVm)
@@ -115,20 +110,23 @@ class MainActivity : ComponentActivity() {
                                     val selected = it == current
                                     it.icon?.let { ic -> // если иконка добавлена в файл Nav,
                                         // то он отобразит её в Bottom bar
-                                        NavigationBarItem(icon = {
-                                            Icon(
-                                                if (selected) ic.selectedIcon else ic.unselectedIcon,
-                                                null,
-                                                Modifier.size(30.dp)
-                                            )
-                                        },
-                                            onClick = { navCtrl.navigate(it.route) {
-                                                restoreState = true
-                                                launchSingleTop = true
-                                                popUpTo(Nav.BOOK.route) {
-                                                    saveState = true
+                                        NavigationBarItem(
+                                            icon = {
+                                                Icon(
+                                                    if (selected) ic.selectedIcon else ic.unselectedIcon,
+                                                    null,
+                                                    Modifier.size(30.dp)
+                                                )
+                                            },
+                                            onClick = {
+                                                navCtrl.navigate(it.route) {
+                                                    restoreState = true
+                                                    launchSingleTop = true
+                                                    popUpTo(Nav.BOOK.route) {
+                                                        saveState = true
+                                                    }
                                                 }
-                                            } },
+                                            },
                                             selected = selected
                                         )
                                     }
@@ -139,7 +137,9 @@ class MainActivity : ComponentActivity() {
                                 Modifier
                                     .fillMaxSize()
                                     .padding(innerPadding)
-                                    .windowInsetsPadding(WindowInsets.ime), navCtrl
+                                    .windowInsetsPadding(WindowInsets.ime), navCtrl,
+                                shouldShowCamera.collectAsState().value,
+                                { cameraPermissionRequestLauncher.launch(android.Manifest.permission.CAMERA) }
                             )
                         }
                     }

@@ -7,3 +7,8 @@ data class QrDto(
     val code: String,
     val ttl: Long
 )
+
+@Serializable
+data class ConfirmQr(
+    val code: String
+)

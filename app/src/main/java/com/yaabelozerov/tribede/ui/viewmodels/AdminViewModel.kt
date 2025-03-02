@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.ApiClient
+import com.yaabelozerov.tribede.data.model.ConfirmQr
 import com.yaabelozerov.tribede.data.model.toDomainModel
 import com.yaabelozerov.tribede.domain.model.AdminBookingUI
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +20,7 @@ data class AdminState(
 
 )
 
-class AdminViewModel(private val api: ApiClient = Application.apiClient): ViewModel() {
+class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewModel() {
     private val _state = MutableStateFlow(AdminState())
     val state = _state.asStateFlow()
 
@@ -27,10 +28,18 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient): ViewMo
         fetchData()
     }
 
-     fun deleteBooking(id: String) {
+    fun deleteBooking(id: String) {
         viewModelScope.launch(Dispatchers.IO) {
             Application.dataStore.getToken().first().let { token ->
                 api.deleteBook(token, id)
+            }
+        }
+    }
+
+    fun confirmQr(code: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            Application.dataStore.getToken().first().let { token ->
+                api.confirmQr(token, ConfirmQr(code))
             }
         }
     }

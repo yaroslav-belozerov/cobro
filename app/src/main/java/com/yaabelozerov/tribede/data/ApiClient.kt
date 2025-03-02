@@ -3,6 +3,7 @@ package com.yaabelozerov.tribede.data
 import com.yaabelozerov.tribede.data.model.AdminBookResponse
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.BookResponseDTO
+import com.yaabelozerov.tribede.data.model.ConfirmQr
 import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.QrDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
@@ -18,6 +19,7 @@ import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
@@ -95,6 +97,18 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
             url("/admin/active")
             header("Authorization", "Bearer $token")
         }.body()
+    }
+
+    suspend fun confirmQr(token: String, body: ConfirmQr) {
+        try {
+            httpClient.patch {
+                url("/confirm-qr")
+                header("Authorization", "Bearer $token")
+                setBody(body)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     suspend fun deleteBook(token: String, id: String) {
