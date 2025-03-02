@@ -7,7 +7,6 @@ data class UserDto(
     val id: String,
     val name: String,
     val email: String,
-    val city: String?,
     val books: List<BookResponseDTO>?,
     val avatarUrl: String?,
     val role: Int
