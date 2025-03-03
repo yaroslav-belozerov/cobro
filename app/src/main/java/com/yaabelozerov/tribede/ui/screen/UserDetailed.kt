@@ -16,16 +16,25 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
+import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.model.UserRole
 import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 @Composable
 fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
@@ -36,7 +45,12 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
 //    BackHandler {
 //        onBack()
 //    }
-    LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    LazyColumn(
+        Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         user?.let {
             item {
                 Spacer(Modifier.height(16.dp))
@@ -61,38 +75,68 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
                         Text(user.name)
                         Spacer(Modifier.size(8.dp))
                         Text(user.email)
+                        Spacer(Modifier.size(8.dp))
+                        Text("Роль: ${UserRole.entries[user.role]}")
                     }
                 }
             }
             item {
-                Text("Роль: ${UserRole.entries[user.role]}")
+                Spacer(Modifier.height(16.dp))
             }
+            passport?.let {
+                item {
+                var res by remember  { mutableStateOf("") }
+                    LaunchedEffect(null) {
+                        vm.viewModelScope.launch {
+                            Application.dataStore.getToken().first().let { token ->
+                                res = Application.apiClient.getAdminPhoto(token, user.id).getOrNull()?.link ?: ""
+                                println("sexy photo $res")
+                            }
 
-        }
-        passport?.let {
-            item {
-                Text("Паспорт", style = MaterialTheme.typography.headlineMedium)
-                Row {
+                        }
+                    }
+
+
+                    HorizontalDivider()
+                    Text("Паспорт", style = MaterialTheme.typography.headlineMedium)
+                    Row {
+                        Box(Modifier.size(120.dp)) {
+                            AsyncImage(
+                                model = res,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize().padding(12.dp).clip(MaterialTheme.shapes.large),
+                                contentScale = ContentScale.Crop
+                            )
+
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Серия: ${passport.serial}Номер: ${passport.number}")
+                            Spacer(Modifier.size(4.dp))
+                            Text("${passport.firstname} ${passport.lastname} ${passport.middlename}")
+                            Spacer(Modifier.size(4.dp))
+                            Text("День рождения: ${passport.birthday}")
+                        }
+
+
+                    }
                 }
             }
-            item {
-                HorizontalDivider()
+            user.books?.let {
+                item {
+                    Text("Бронирования", style = MaterialTheme.typography.headlineMedium)
+                    Spacer(Modifier.size(12.dp))
+                    HorizontalDivider()
+                    Spacer(Modifier.size(4.dp))
+                }
+                items(it) { book ->
+                    AdminBookCardForBookUI(model = book, onMove = {}, onDelete = vm::deleteBooking)
+                    Spacer(Modifier.size(12.dp))
+                    HorizontalDivider()
+                    Spacer(Modifier.size(4.dp))
+                }
             }
         }
-        user?.books?.let {
-            item {
-                Text("Бронирования", style = MaterialTheme.typography.headlineMedium)
-                Spacer(Modifier.size(12.dp))
-                HorizontalDivider()
-                Spacer(Modifier.size(4.dp))
-            }
-            items(it) { book ->
-                AdminBookCardForBookUI(model = book, onMove = {}, onDelete = vm::deleteBooking)
-                Spacer(Modifier.size(12.dp))
-                HorizontalDivider()
-                Spacer(Modifier.size(4.dp))
-            }
-        }
+
     }
 
 }
