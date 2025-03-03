@@ -115,7 +115,7 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
                 val zones = api.getZones(token)
                 zones.getOrNull()?.let {
                     _state.update { state ->
-                        state.copy(zones = it.map { it.name }.sorted())
+                        state.copy(zones = it.filter { it.type != "Misc" }.map { it.name }.sorted())
                     }
                 }
                 val users = api.getAdminUsers(token)

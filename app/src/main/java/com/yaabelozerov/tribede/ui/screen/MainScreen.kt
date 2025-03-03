@@ -28,14 +28,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessAlarm
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.HourglassTop
+import androidx.compose.material.icons.filled.PlayCircleFilled
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerState
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -76,6 +80,7 @@ import com.yaabelozerov.tribede.R
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.SeatDto
 import com.yaabelozerov.tribede.data.model.UserRole
+import com.yaabelozerov.tribede.domain.model.BookStatus
 import com.yaabelozerov.tribede.domain.model.BookingUI
 import com.yaabelozerov.tribede.ui.components.CoworkingSpace
 import com.yaabelozerov.tribede.ui.components.MyButton
@@ -87,6 +92,7 @@ import com.yaabelozerov.tribede.ui.components.color
 import com.yaabelozerov.tribede.ui.viewmodels.MainState
 import com.yaabelozerov.tribede.ui.viewmodels.MainViewModel
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
+import org.koin.dsl.module
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -113,12 +119,12 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel) {
             return year >= currentDate.year
         }
     }
-    val userRole = userVm.state.collectAsState().value.user?.role?.let { UserRole.entries.getOrNull(it) }
+    val user by userVm.state.collectAsState()
+    val userRole = user.user?.role?.let { UserRole.entries.getOrNull(it) }
     val state by vm.state.collectAsState()
     var isBookingDialogOpen by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = currentMillis,
-        selectableDates = selectableDates
+        initialSelectedDateMillis = currentMillis, selectableDates = selectableDates
     )
     var chosenZone by remember { mutableStateOf<CoworkingSpace?>(null) }
     var chosenSeat by remember { mutableStateOf<SeatDto?>(null) }
@@ -138,14 +144,14 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel) {
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .padding(top = 12.dp), horizontalArrangement = Arrangement.Center
+                            .padding(top = 12.dp),
+                        horizontalArrangement = Arrangement.Center
                     ) {
                         Text("Выберите зону", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
                 ReservationMap(
-                    userRole,
-                    chosenZone, currentChosenType, {
+                    userRole, chosenZone, currentChosenType, {
                         if (chosenZone == it) {
                             chosenZone = null
                         } else {
@@ -205,6 +211,42 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel) {
                         { chosenSeat = if (chosenSeat == it) null else it })
                 }
             }
+            user.user?.books?.map {
+                LocalDateTime.ofInstant(Instant.parse(it.start), ZoneId.systemDefault()) to it
+            }?.sortedBy { it.first }
+                ?.firstOrNull { it.second.status == BookStatus.ACTIVE.ordinal || it.second.status == BookStatus.PENDING.ordinal }
+                ?.let { (date, book) ->
+                    ElevatedCard(
+                        onClick = {},
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                    ) {
+                        Column(Modifier.fillMaxWidth().padding(12.dp)) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                when (book.status) {
+                                    BookStatus.PENDING.ordinal -> {
+                                        Text("Ждём вас")
+                                    }
+
+                                    BookStatus.ACTIVE.ordinal -> {
+                                        Text("Добро пожаловать")
+                                    }
+                                }
+                                Icon(when (book.status) {
+                                    BookStatus.PENDING.ordinal -> Icons.Filled.HourglassTop
+                                    BookStatus.ACTIVE.ordinal -> Icons.Filled.PlayCircleFilled
+                                    else -> Icons.Default.AccessAlarm
+                                }, contentDescription = null, modifier = Modifier.size(24.dp))
+                            }
+                            Text(book.zoneName, style = MaterialTheme.typography.titleLarge)
+                            if (book.status == BookStatus.PENDING.ordinal) Text(date.run {
+                                "${dayOfMonth.toString().padStart(2, '0')}.${monthValue.toString().padStart(2, '0')} в $hour:${
+                                    minute.toString().padStart(2, '0')
+                                }"
+                            }, style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
+                }
         }
 
         if (isBookingDialogOpen) {
@@ -213,7 +255,9 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel) {
                 BookingDialog(LocalDateTime.ofInstant(datePickerState.selectedDateMillis?.let {
                     Instant.ofEpochMilli(it)
                 } ?: Instant.now(), ZoneId.systemDefault()),
-                    onDismiss = { isBookingDialogOpen = false; chosenZone = null; chosenSeat = null },
+                    onDismiss = {
+                        isBookingDialogOpen = false; chosenZone = null; chosenSeat = null
+                    },
                     onClick = { req ->
                         chosenZone?.id?.let {
                             vm.book(
@@ -223,7 +267,11 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel) {
                                 isBookingSuccess = it
                             }
                         }
-                    }, vm = vm, zoneId = zone.id, seatId = chosenSeat?.id, bookingSuccess = isBookingSuccess
+                    },
+                    vm = vm,
+                    zoneId = zone.id,
+                    seatId = chosenSeat?.id,
+                    bookingSuccess = isBookingSuccess
                 )
             }
 
@@ -398,7 +446,7 @@ fun BookingDialog(
     vm: MainViewModel,
     zoneId: String,
     seatId: String?,
-    bookingSuccess: Boolean?
+    bookingSuccess: Boolean?,
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card {
@@ -411,7 +459,11 @@ fun BookingDialog(
                     when (isSuccess) {
                         true -> {
                             Spacer(Modifier.height(16.dp))
-                            Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(64.dp))
+                            Icon(
+                                Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp)
+                            )
                             Spacer(Modifier.height(8.dp))
                             Text(
                                 "Бронь на ${chosenDate.toLocalDate()} успешна",
@@ -419,9 +471,14 @@ fun BookingDialog(
                             )
                             MyButton(onClick = onDismiss, text = "OK")
                         }
+
                         false -> {
                             Spacer(Modifier.height(16.dp))
-                            Icon(Icons.Default.Error, contentDescription = null, modifier = Modifier.size(64.dp))
+                            Icon(
+                                Icons.Default.Error,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp)
+                            )
                             Spacer(Modifier.height(8.dp))
                             Text(
                                 "Не удалось забронировать",
@@ -429,6 +486,7 @@ fun BookingDialog(
                             )
                             MyButton(onClick = onDismiss, text = "OK")
                         }
+
                         null -> {
                             Text(
                                 "Бронь на ${chosenDate.toLocalDate()}",
@@ -447,7 +505,9 @@ fun BookingDialog(
                                 VerticalPager(
                                     hourStartPager,
                                     horizontalAlignment = Alignment.CenterHorizontally,
-                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                    contentPadding = PaddingValues(
+                                        horizontal = 8.dp, vertical = 4.dp
+                                    ),
                                     modifier = Modifier
                                         .clip(MaterialTheme.shapes.small)
                                         .height(56.dp)
@@ -468,7 +528,9 @@ fun BookingDialog(
                                 VerticalPager(
                                     minuteStartPager,
                                     horizontalAlignment = Alignment.CenterHorizontally,
-                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                    contentPadding = PaddingValues(
+                                        horizontal = 8.dp, vertical = 4.dp
+                                    ),
                                     modifier = Modifier
                                         .clip(MaterialTheme.shapes.small)
                                         .height(56.dp)
@@ -497,7 +559,9 @@ fun BookingDialog(
                                 VerticalPager(
                                     hourEndPager,
                                     horizontalAlignment = Alignment.CenterHorizontally,
-                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                    contentPadding = PaddingValues(
+                                        horizontal = 8.dp, vertical = 4.dp
+                                    ),
                                     modifier = Modifier
                                         .clip(MaterialTheme.shapes.small)
                                         .height(56.dp)
@@ -518,7 +582,9 @@ fun BookingDialog(
                                 VerticalPager(
                                     minuteEndPager,
                                     horizontalAlignment = Alignment.CenterHorizontally,
-                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                    contentPadding = PaddingValues(
+                                        horizontal = 8.dp, vertical = 4.dp
+                                    ),
                                     modifier = Modifier
                                         .clip(MaterialTheme.shapes.small)
                                         .height(56.dp)

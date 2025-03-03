@@ -43,9 +43,6 @@ class UserViewModel(
     private val _state = MutableStateFlow(UserState())
     val state = _state.asStateFlow()
 
-    private val _moveBookings = MutableStateFlow(listOf<BookingUI>())
-    val moveBookings = _moveBookings.asStateFlow()
-
     init {
         fetchUserInfo()
     }
@@ -67,22 +64,6 @@ class UserViewModel(
                     file.delete()
                     fetchUserInfo()
                 }
-            }
-        }
-    }
-
-
-    fun getBookings(zoneId: String, seatId: String?) {
-        viewModelScope.launch {
-            Application.dataStore.getToken().first().let { token ->
-                val result = apiClient.getBookings(token, zoneId, seatId)
-                result.getOrNull()?.let { res ->
-                    _moveBookings.update {
-                        res.map { it.toDomainModel() }
-                    }
-                    Log.d("getBook", "getBookings in uservm: $res")
-                } ?: _moveBookings.update { emptyList() }
-                result.exceptionOrNull()?.printStackTrace()
             }
         }
     }

@@ -117,6 +117,7 @@ fun MainAdminScreen(vm: AdminViewModel = viewModel(), navigateToScan: () -> Unit
                 onClick = navigateToScan,
                 shape = RoundedCornerShape(6.dp),
                 modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 24.dp, end = 24.dp),
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer
             ) {
                 Icon(Icons.Filled.QrCode, contentDescription = null, modifier = Modifier.padding(16.dp).size(36.dp))
             }
@@ -168,7 +169,7 @@ fun AdminBookCard(
                         Text("В процессе")
                     }
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Box(Modifier.size(24.dp)) {
                         AsyncImage(model.userPhotoUrl, contentDescription = null,
                             modifier = Modifier.fillMaxSize().clip(CircleShape),
@@ -178,7 +179,7 @@ fun AdminBookCard(
                     Text(model.username, style = MaterialTheme.typography.bodySmall)
                 }
             }
-            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.weight(1f))
             if (model.status != BookStatus.ACTIVE) {
                 FloatingActionButton(
                     onClick = { onMove(model.id) }, shape = RoundedCornerShape(6.dp),
@@ -259,7 +260,7 @@ fun AdminBookCardForBookUI(
 
                 }
             }
-            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.weight(1f))
             if (status != BookStatus.ACTIVE) {
                 FloatingActionButton(
                     onClick = { onMove(model.id) }, shape = RoundedCornerShape(6.dp),
