@@ -1,6 +1,7 @@
 package com.yaabelozerov.tribede.data
 
 import com.yaabelozerov.tribede.data.model.AdminBookResponse
+import com.yaabelozerov.tribede.data.model.AdminPhotoResponse
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.BookResponseDTO
 import com.yaabelozerov.tribede.data.model.ConfirmQr
@@ -130,9 +131,9 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
         }.body()
     }
 
-    suspend fun getAdminPhoto(token: String, id: String): Result<UserPassportDTO> = runCatching {
+    suspend fun getAdminPhoto(token: String, id: String): Result<AdminPhotoResponse> = runCatching {
         httpClient.get {
-            url("/user/$id/passport")
+            url("/user/$id/verification-photo")
             header("Authorization", "Bearer $token")
         }.body()
     }

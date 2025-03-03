@@ -70,6 +70,7 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
                 val result = api.getZones(token)
                 result.getOrNull()?.let {
                     val zones = it.map {
+                        println("token $token")
                         if (it.type == "Office") {
                             val seats = api.getSeatsForOfficeZone(token, it.id).also { it.exceptionOrNull()?.printStackTrace() }
                             it.toSpace(seats.getOrNull() ?: emptyList()) //TODO потом починить
