@@ -46,6 +46,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalBottomSheetDefaults
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
@@ -94,6 +95,7 @@ import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
 import kotlinx.coroutines.launch
 import java.lang.Math.pow
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import kotlin.math.pow
@@ -102,10 +104,25 @@ import kotlin.math.sqrt
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewModel()) {
+    val currentDate = LocalDate.now()
+    // Преобразуем текущую дату в миллисекунды с начала эпохи
+    val currentDateMillis = currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val selectableDates = object : SelectableDates {
+        override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+            // Разрешаем выбор только дат, которые не раньше текущей
+            return utcTimeMillis >= currentDateMillis
+        }
+
+        override fun isSelectableYear(year: Int): Boolean {
+            // Разрешаем выбор только текущего и будущих годов
+            return year >= currentDate.year
+        }
+    }
     val state by vm.state.collectAsState()
     var isBookingDialogOpen by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = Instant.now().toEpochMilli()
+        initialSelectedDateMillis = currentDateMillis,
+        selectableDates = selectableDates
     )
     var chosenZone by remember { mutableStateOf<CoworkingSpace?>(null) }
     var chosenSeat by remember { mutableStateOf<SeatDto?>(null) }
@@ -219,6 +236,7 @@ fun BookingModalBottomSheet(
     chosenSeat: SeatDto?,
     setChosenSeat: (SeatDto?) -> Unit,
 ) {
+
     val state by vm.state.collectAsState()
     val seatPainter = rememberVectorPainter(ImageVector.vectorResource(R.drawable.seat))
     val bookingsForToday = remember(state.currentBookings, datePickerState.selectedDateMillis) {
