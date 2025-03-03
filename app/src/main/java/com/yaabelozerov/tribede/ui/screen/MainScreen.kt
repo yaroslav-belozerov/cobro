@@ -326,7 +326,7 @@ fun BookingModalBottomSheet(
                     }
                     Text(zone.name, style = MaterialTheme.typography.headlineLarge)
                     Text(zone.description)
-                    Text(zone.run { "Свободно ${maxPeople - 0} из $maxPeople" })
+                    Text("До ${zone.maxPeople} человек", modifier = Modifier.padding(bottom = 8.dp))
                 }
             }
             AnimatedVisibility(

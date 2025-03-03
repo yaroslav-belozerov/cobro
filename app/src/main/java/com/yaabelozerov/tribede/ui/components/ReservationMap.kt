@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Wc
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -32,6 +33,11 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yaabelozerov.tribede.data.model.SeatDto
@@ -108,6 +114,17 @@ fun ReservationMap(
     var height by remember { mutableIntStateOf(0) }
     val toiletPainter = rememberVectorPainter(Icons.Default.Wc)
     val entrancePainter = rememberVectorPainter(Icons.AutoMirrored.Default.ArrowLeft)
+    val peoplePainter = rememberVectorPainter(Icons.Default.People)
+
+    val ffm = LocalFontFamilyResolver.current
+    val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+
+    val tm = TextMeasurer(
+        defaultFontFamilyResolver = ffm,
+        defaultDensity = density,
+        defaultLayoutDirection = layoutDirection,
+    )
 
     Canvas(Modifier
         .fillMaxWidth()
@@ -169,11 +186,9 @@ fun ReservationMap(
                 )
             }
             zone.seats.forEach { seat ->
-                drawCircle(
-                    color = Color(0xFFD1603D).copy(if (currentChosenType?.let { it == SpaceType.OFFICE } != false) 1f else 0.5f),
+                drawCircle(color = Color(0xFFD1603D).copy(if (currentChosenType?.let { it == SpaceType.OFFICE } != false) 1f else 0.5f),
                     center = Offset(seat.x * width, seat.y * height),
-                    radius = 6.dp.toPx()
-                )
+                    radius = 6.dp.toPx())
             }
 
             decor.forEach {
@@ -184,7 +199,7 @@ fun ReservationMap(
                                 with(toiletPainter) {
                                     draw(
                                         size = Size(24.dp.toPx(), 24.dp.toPx()),
-                                        colorFilter = ColorFilter.tint(bgColor.copy(if (currentChosenType != null) 0.5f else 1f))
+                                        colorFilter = ColorFilter.tint(bgColor.copy(if (currentChosenType == SpaceType.MISC || currentChosenType == null) 1f else 0.25f))
                                     )
                                 }
                             }
@@ -193,7 +208,7 @@ fun ReservationMap(
                                 with(entrancePainter) {
                                     draw(
                                         size = Size(48.dp.toPx(), 48.dp.toPx()),
-                                        colorFilter = ColorFilter.tint(Color(0xFF0ea600).copy(if (currentChosenType != null) 0.5f else 1f))
+                                        colorFilter = ColorFilter.tint(Color(0xFF0ea600).copy(if (currentChosenType != null) 0.25f else 1f))
                                     )
                                 }
                             }
@@ -216,6 +231,23 @@ fun ReservationMap(
 
                     else -> Unit
                 }
+            }
+
+            if (zone.type != SpaceType.MISC && zone.type != SpaceType.OFFICE) {
+                with(peoplePainter) {
+                    translate(zone.position.x * width + 8.dp.toPx(),
+                        zone.position.let { it.y + it.height } * height - 32.dp.toPx()) {
+                        draw(
+                            size = Size(24.dp.toPx(), 24.dp.toPx()),
+                            colorFilter = ColorFilter.tint(bgColor.copy(if (currentChosenType != null) if (currentChosenType == zone.type) 1f else 0.5f else 1f))
+                        )
+                    }
+                }
+                val tmr = tm.measure("${zone.maxPeople}")
+                drawText(tmr,
+                    topLeft = Offset(zone.position.x * width + 36.dp.toPx(),
+                        zone.position.let { it.y + it.height } * height - tmr.size.height - 12.dp.toPx()),
+                    color = bgColor)
             }
         }
     }
@@ -385,7 +417,7 @@ fun ReservationMapPreview() {
     ReservationMap(
         id, null, { id = it }, lst, listOf(
             Decoration(
-                type = "Icon", name = "toilet", x = 0.27f, y = 0.348f, width = null, height = null
+                type = "Icon", name = "toilet", x = 0.265f, y = 0.355f, width = null, height = null
             ), Decoration(
                 type = "Rectangle",
                 name = "door",

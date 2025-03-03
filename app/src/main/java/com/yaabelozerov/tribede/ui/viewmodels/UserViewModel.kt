@@ -76,12 +76,12 @@ class UserViewModel(
 
     fun fetchUserInfo() {
         viewModelScope.launch {
-            dataStore.getToken().first().let { token ->
+            dataStore.getToken().distinctUntilChanged().collect { token ->
                 _state.update { it.copy(isLoading = true) }
                 token.takeIf { it.isNotEmpty() }?.let {
                     val result = apiClient.getUser(it)
-                    println("result: $result")
                     result.getOrNull()?.let {
+                        println("result: $it")
                         _state.update { state ->
                             state.copy(user = it)
                         }
