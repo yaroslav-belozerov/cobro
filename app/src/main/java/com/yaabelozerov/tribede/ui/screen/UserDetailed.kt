@@ -76,7 +76,11 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
                         Spacer(Modifier.size(8.dp))
                         Text(user.email)
                         Spacer(Modifier.size(8.dp))
-                        Text("Роль: ${UserRole.entries[user.role]}")
+                        Text("Роль: ${when (UserRole.entries[user.role]) {
+                            UserRole.ADMIN -> "Администратор" 
+                            UserRole.CLIENT -> "Клиент" 
+                            UserRole.INTERNAL -> "Внутренний клиент" 
+                        } }")
                     }
                 }
             }
@@ -99,7 +103,7 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
 
                     HorizontalDivider()
                     Text("Паспорт", style = MaterialTheme.typography.headlineMedium)
-                    Row {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(Modifier.size(120.dp)) {
                             AsyncImage(
                                 model = res,
@@ -116,8 +120,6 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
                             Spacer(Modifier.size(4.dp))
                             Text("День рождения: ${passport.birthday}")
                         }
-
-
                     }
                 }
             }

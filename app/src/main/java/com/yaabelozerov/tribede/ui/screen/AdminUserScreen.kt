@@ -34,6 +34,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.model.UserDto
+import com.yaabelozerov.tribede.data.model.UserRole
 import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
 import kotlinx.coroutines.launch
 
@@ -51,16 +52,24 @@ fun AdminUserScreen(vm: AdminViewModel = viewModel(), onNavigateToDetailed: () -
         item {
             Spacer(Modifier.height(16.dp))
             Box(Modifier.fillMaxWidth()) {
-                Text("Клиенты", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.align(
-                    Alignment.Center))
-                IconButton(modifier = Modifier.align(Alignment.CenterEnd).padding(top = 4.dp), onClick = {
-                    scope.launch {
-                        Application.dataStore.apply {
-                            saveIsAdmin(false)
-                            saveToken("")
+                Text(
+                    "Клиенты",
+                    style = MaterialTheme.typography.headlineLarge,
+                    modifier = Modifier.align(
+                        Alignment.Center
+                    )
+                )
+                IconButton(modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(top = 4.dp),
+                    onClick = {
+                        scope.launch {
+                            Application.dataStore.apply {
+                                saveIsAdmin(false)
+                                saveToken("")
+                            }
                         }
-                    }
-                }) { Icon(Icons.AutoMirrored.Default.Logout, contentDescription = "logout") }
+                    }) { Icon(Icons.AutoMirrored.Default.Logout, contentDescription = "logout") }
             }
             Spacer(Modifier.height(8.dp))
             HorizontalDivider()
@@ -80,9 +89,11 @@ fun UserCard(model: UserDto, onClick: () -> Unit) {
     Card(modifier = Modifier
         .fillMaxWidth()
         .clickable { onClick() }) {
-        Column(Modifier
-            .padding(12.dp)
-            .fillMaxWidth()) {
+        Column(
+            Modifier
+                .padding(12.dp)
+                .fillMaxWidth()
+        ) {
             Row {
                 Box(Modifier.size(50.dp)) {
                     AsyncImage(
@@ -96,12 +107,17 @@ fun UserCard(model: UserDto, onClick: () -> Unit) {
                 }
                 Spacer(Modifier.size(16.dp))
                 Column {
-                    Text(model.name)
-                    Spacer(Modifier.size(8.dp))
+                    Text(model.name, style = MaterialTheme.typography.titleMedium)
                     Text(model.email)
                 }
             }
-            Text("Роль: ${model.role}")
+            Text(
+                when (UserRole.entries[model.role]) {
+                    UserRole.ADMIN -> "Администратор"
+                    UserRole.CLIENT -> "Клиент"
+                    UserRole.INTERNAL -> "Внутренний пользователь"
+                }, color = MaterialTheme.colorScheme.tertiary
+            )
         }
     }
 

@@ -115,14 +115,13 @@ fun EnterPassportWidget(
                         text = if (showCamera) "Ввести данные" else "Сделать фото"
                     )
                 }
+                MyButton(
+                    onClick = { capturedImageUri?.let {
+                        onSend(passport, it); navigateToUser()
+                    } },
+                    text = "Отправить"
+                )
             }
-            MyButton(
-                onClick = { capturedImageUri?.let {
-                    onSend(passport, it); navigateToUser()
-                } },
-                text = "Отправить",
-                modifier = Modifier.fillMaxWidth()
-            )
         }
     }
 }
