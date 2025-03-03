@@ -42,7 +42,6 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
                 Text("Пользователь", style = MaterialTheme.typography.headlineMedium)
                 Spacer(Modifier.height(8.dp))
-                HorizontalDivider()
             }
             item {
                 Spacer(Modifier.height(16.dp))
@@ -59,9 +58,9 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
                     }
                     Spacer(Modifier.size(16.dp))
                     Column {
-                        Text(user.name, style = MaterialTheme.typography.titleSmall)
+                        Text(user.name)
                         Spacer(Modifier.size(8.dp))
-                        Text(user.email, style = MaterialTheme.typography.titleSmall)
+                        Text(user.email)
                     }
                 }
             }
@@ -73,7 +72,9 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
         passport?.let {
             item {
                 Text("Паспорт", style = MaterialTheme.typography.headlineMedium)
-                Row {  }
+                Row {
+                    AsyncImage()
+                }
             }
             item {
                 HorizontalDivider()

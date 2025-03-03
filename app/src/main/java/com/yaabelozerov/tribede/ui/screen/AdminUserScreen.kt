@@ -56,8 +56,8 @@ fun AdminUserScreen(vm: AdminViewModel = viewModel(), onNavigateToDetailed: () -
                 IconButton(modifier = Modifier.align(Alignment.CenterEnd).padding(top = 4.dp), onClick = {
                     scope.launch {
                         Application.dataStore.apply {
-                            saveToken("")
                             saveIsAdmin(false)
+                            saveToken("")
                         }
                     }
                 }) { Icon(Icons.AutoMirrored.Default.Logout, contentDescription = "logout") }

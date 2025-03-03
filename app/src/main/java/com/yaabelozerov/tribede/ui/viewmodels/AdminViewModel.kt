@@ -1,8 +1,9 @@
 package com.yaabelozerov.tribede.ui.viewmodels
 
+import android.net.Uri
+import androidx.core.net.toFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.ApiClient
 import com.yaabelozerov.tribede.data.model.ConfirmQr
@@ -86,10 +87,15 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
         }
     }
 
-    fun sendPassport(passportDTO: UserPassportDTO, userId: String) {
+    fun sendPassportAndImage(passportDTO: UserPassportDTO, uri: Uri, userId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             Application.dataStore.getToken().first().let { token ->
-                api.sendPassword(token, passportDTO, userId)
+                api.sendPassport(token, passportDTO, userId)
+                api.sendPhoto(
+                    uri.toFile(),
+                    id = userId,
+                    token = token
+                ).also { it.exceptionOrNull()?.printStackTrace() }
             }
         }
     }

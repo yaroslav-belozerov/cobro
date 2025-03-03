@@ -400,8 +400,9 @@ private fun BookingDialog(
                 bookingSuccess.let { isSuccess ->
                     when (isSuccess) {
                         true -> {
-                            Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(64.dp))
                             Spacer(Modifier.height(16.dp))
+                            Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(64.dp))
+                            Spacer(Modifier.height(8.dp))
                             Text(
                                 "Бронь на ${chosenDate.toLocalDate()} успешна",
                                 style = MaterialTheme.typography.headlineMedium
@@ -409,8 +410,9 @@ private fun BookingDialog(
                             MyButton(onClick = onDismiss, text = "OK")
                         }
                         false -> {
-                            Icon(Icons.Default.Error, contentDescription = null, modifier = Modifier.size(64.dp))
                             Spacer(Modifier.height(16.dp))
+                            Icon(Icons.Default.Error, contentDescription = null, modifier = Modifier.size(64.dp))
+                            Spacer(Modifier.height(8.dp))
                             Text(
                                 "Не удалось забронировать",
                                 style = MaterialTheme.typography.headlineMedium

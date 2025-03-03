@@ -116,7 +116,14 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
         }.body()
     }
 
-    suspend fun sendPassword(token: String, passportDTO: UserPassportDTO, id: String) {
+    suspend fun getAdminPhoto(token: String, id: String): Result<UserPassportDTO> = runCatching {
+        httpClient.get {
+            url("/user/$id/passport")
+            header("Authorization", "Bearer $token")
+        }.body()
+    }
+
+    suspend fun sendPassport(token: String, passportDTO: UserPassportDTO, id: String) {
         try {
             httpClient.post {
                 url("/user/$id/passport")
@@ -126,7 +133,27 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
 
+    suspend fun sendPhoto(file: File, id: String, token: String): Result<String> = runCatching {
+        httpClient.post {
+            url("/user/$id/verification-photo")
+            setBody(
+                MultiPartFormDataContent(
+                    formData {
+                        append(
+                            "file",
+                            file.readBytes(),
+                            Headers.build {
+                                append("Content-Type", "image/jpeg")
+                                append(HttpHeaders.ContentDisposition, "filename=${file.name}")
+                            }
+                        )
+                    }
+                )
+            )
+            header("Authorization", "Bearer $token")
+        }.body()
     }
 
     suspend fun confirmQr(token: String, body: ConfirmQr): Result<QrConfirmResponse> = kotlin.runCatching {
