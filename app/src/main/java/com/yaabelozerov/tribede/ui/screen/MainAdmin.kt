@@ -44,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
@@ -170,7 +171,8 @@ fun AdminBookCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.size(24.dp)) {
                         AsyncImage(model.userPhotoUrl, contentDescription = null,
-                            modifier = Modifier.fillMaxSize().clip(CircleShape))
+                            modifier = Modifier.fillMaxSize().clip(CircleShape),
+                            contentScale = ContentScale.Crop)
 
                     }
                     Text(model.username, style = MaterialTheme.typography.bodySmall)

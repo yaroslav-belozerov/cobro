@@ -5,6 +5,7 @@ import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.BookResponseDTO
 import com.yaabelozerov.tribede.data.model.ConfirmQr
 import com.yaabelozerov.tribede.data.model.LoginDto
+import com.yaabelozerov.tribede.data.model.QrConfirmResponse
 import com.yaabelozerov.tribede.data.model.QrDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
 import com.yaabelozerov.tribede.data.model.SeatDto
@@ -114,17 +115,27 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
         }.body()
     }
 
-    suspend fun confirmQr(token: String, body: ConfirmQr) {
+    suspend fun sendPassword(token: String, passportDTO: UserPassportDTO, id: String) {
         try {
-            httpClient.patch {
-                url("/confirm-qr")
+            httpClient.post {
+                url("/user/$id/passport")
                 header("Authorization", "Bearer $token")
-                setBody(body)
+                setBody(passportDTO)
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
+
     }
+
+    suspend fun confirmQr(token: String, body: ConfirmQr): Result<QrConfirmResponse> = kotlin.runCatching {
+        httpClient.patch {
+            url("/confirm-qr")
+            header("Authorization", "Bearer $token")
+            setBody(body)
+        }.body()
+    }
+
 
     suspend fun deleteBook(token: String, id: String) {
         try {

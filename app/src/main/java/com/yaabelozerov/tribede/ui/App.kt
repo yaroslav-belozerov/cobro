@@ -22,7 +22,12 @@ import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
 
 @Composable
-fun App(modifier: Modifier = Modifier, navCtrl: NavHostController, hasCameraPermission: Boolean, askForPermission: () -> Unit) {
+fun App(
+    modifier: Modifier = Modifier,
+    navCtrl: NavHostController,
+    hasCameraPermission: Boolean,
+    askForPermission: () -> Unit
+) {
     val userViewModel: UserViewModel = viewModel()
     val userState by userViewModel.state.collectAsState()
     val adminVM: AdminViewModel = viewModel()
@@ -34,9 +39,10 @@ fun App(modifier: Modifier = Modifier, navCtrl: NavHostController, hasCameraPerm
                 if (isAdmin != null) {
                     if (isAdmin) {
                         userState.user?.let {
-                            MainAdminScreen(vm = adminVM,navigateToScan = {
+                            MainAdminScreen(vm = adminVM, navigateToScan = {
                                 askForPermission()
-                                navCtrl.navigate(Nav.SCAN.route) })
+                                navCtrl.navigate(Nav.SCAN.route)
+                            })
                         }
                     } else {
                         userState.user?.let {
@@ -69,11 +75,15 @@ fun App(modifier: Modifier = Modifier, navCtrl: NavHostController, hasCameraPerm
 
         ) {
 
-            QrPage(hasCameraPermission, goBack = {navCtrl.navigateUp()}, vm = adminVM)
+            QrPage(
+                hasCameraPermission,
+                goBack = { navCtrl.navigateUp() },
+                vm = adminVM,
+                navigateToUser = { navCtrl.navigate(Nav.USER_DETAILED.route) })
         }
 
         composable(Nav.USER_DETAILED.route) {
-            UserDetailed(vm = adminVM)
+            UserDetailed(vm = adminVM, onBack = { navCtrl.navigate(Nav.USER.route) })
         }
     }
 }

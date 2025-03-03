@@ -2,9 +2,11 @@ package com.yaabelozerov.tribede.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.ApiClient
 import com.yaabelozerov.tribede.data.model.ConfirmQr
+import com.yaabelozerov.tribede.data.model.QrConfirmResponse
 import com.yaabelozerov.tribede.data.model.UserDto
 import com.yaabelozerov.tribede.data.model.UserPassportDTO
 import com.yaabelozerov.tribede.data.model.toDomainModel
@@ -25,7 +27,9 @@ data class AdminState(
 
     val users: List<UserDto> = emptyList(),
     val currentUser: UserDto? = null,
-    val currentPassport: UserPassportDTO? = null
+    val currentPassport: UserPassportDTO? = null,
+
+    val qrRequest: QrConfirmResponse? = null
 
 )
 
@@ -73,9 +77,20 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
     fun confirmQr(code: String) {
         viewModelScope.launch(Dispatchers.IO) {
             Application.dataStore.getToken().first().let { token ->
-                api.confirmQr(token, ConfirmQr(code))
+                val res = api.confirmQr(token, ConfirmQr(code))
+                res.getOrNull()?.let { r ->
+                    _state.update { it.copy(qrRequest = r) }
+                }
             }
             fetchData()
+        }
+    }
+
+    fun sendPassport(passportDTO: UserPassportDTO, userId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            Application.dataStore.getToken().first().let { token ->
+                api.sendPassword(token, passportDTO, userId)
+            }
         }
     }
 

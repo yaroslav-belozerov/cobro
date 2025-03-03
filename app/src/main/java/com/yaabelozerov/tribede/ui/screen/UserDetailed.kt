@@ -1,5 +1,6 @@
 package com.yaabelozerov.tribede.ui.screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,11 +27,14 @@ import coil3.compose.AsyncImage
 import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
 
 @Composable
-fun UserDetailed(vm: AdminViewModel = viewModel()) {
+fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
     val user = vm.state.collectAsState().value.currentUser
     val passport = vm.state.collectAsState().value.currentPassport
     println("screen" + user.toString())
     println(passport)
+//    BackHandler {
+//        onBack()
+//    }
     LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         user?.let {
             item {
@@ -67,8 +71,10 @@ fun UserDetailed(vm: AdminViewModel = viewModel()) {
         }
         passport?.let {
             item {
-                Text("Паспорт", style = MaterialTheme.typography.headlineMedium)
-
+                Text("Паспорт", style = MaterialTheme.typography.headlineMedium) // TODO Нарисовать юай для паспорта
+            }
+            item {
+                HorizontalDivider()
             }
         }
         user?.books?.let {
