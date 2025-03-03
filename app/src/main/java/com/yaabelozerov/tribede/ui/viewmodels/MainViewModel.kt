@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class MainState(
     val zones: List<CoworkingSpace> = emptyList(),
@@ -33,6 +35,25 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
         fetchZones()
         fetchDecor()
         viewModelScope.launch {
+        }
+    }
+
+    fun validateBook(zoneId: String, from: LocalDateTime, to: LocalDateTime, seatId: String?, callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            Application.dataStore.getToken().first().let { token ->
+                if (api.validateId(
+                    token = token,
+                    from = from.toString(),
+                    id = zoneId,
+                    seatId = seatId,
+                    to = to.toString()
+                ).isSuccess) {
+                    callback(true)
+                } else {
+                    callback(false)
+                }
+
+            }
         }
     }
 

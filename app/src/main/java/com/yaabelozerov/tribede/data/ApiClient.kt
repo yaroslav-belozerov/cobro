@@ -171,12 +171,15 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
         }.body()
     }
 
-    suspend fun validateId(token: String, id: String, from: String, to: String): Result<String> = runCatching {
+    suspend fun validateId(token: String, id: String, from: String, to: String, seatId: String?): Result<String> = runCatching {
         httpClient.get {
             url("book/$id/validate")
             parameter("from", from)
             parameter("to", to)
             header("Authorization", "Bearer $token")
+            seatId?.let {
+                parameter("seatId", it)
+            }
         }.body()
     }
 
