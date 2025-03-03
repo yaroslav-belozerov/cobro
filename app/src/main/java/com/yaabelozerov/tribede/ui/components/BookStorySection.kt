@@ -42,7 +42,7 @@ fun BookCard(model: BookResponseDTO, onClick: (String) -> Unit = {}) {
 
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(model.zoneName, style = MaterialTheme.typography.titleLarge)
+            Text(model.zoneName, style = MaterialTheme.typography.titleMedium)
 //            model.seat?.let {
 //                Text(it, style = MaterialTheme.typography.titleSmall)
 //            }
