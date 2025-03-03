@@ -131,7 +131,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                                 zoneId = it.id, seatId = null
                             )
                         }
-                    }, zones
+                    }, zones, emptyList()
                 )
                 if (chosenZone != null) ModalBottomSheet(
                     sheetState = sheetState, onDismissRequest = {
@@ -223,8 +223,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                                     }
                                 }
 
-
-                                if (chosenSeat == null && zone.type == SpaceType.OFFICE) {
+                                AnimatedVisibility(chosenSeat == null && zone.type == SpaceType.OFFICE) {
                                     Text(
                                         "Выберите место",
                                         style = MaterialTheme.typography.bodyMedium
