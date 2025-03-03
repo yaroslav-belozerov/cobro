@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Update
-import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -31,7 +30,7 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 @Composable
-fun BookCard(model: BookResponseDTO, onClick: (String) -> Unit = {}, onMove: (String) -> Unit) {
+fun BookCard(model: BookResponseDTO, onClick: (String) -> Unit = {}, onMove: ((String) -> Unit)?) {
     val startDateTime = LocalDateTime.ofInstant(Instant.parse(model.start), ZoneId.systemDefault())
     val endDateTime = LocalDateTime.ofInstant(Instant.parse(model.end), ZoneId.systemDefault())
     var minutes = ChronoUnit.MINUTES.between(startDateTime, endDateTime)
@@ -87,11 +86,13 @@ fun BookCard(model: BookResponseDTO, onClick: (String) -> Unit = {}, onMove: (St
                 content = { Icon(Icons.Filled.QrCode, null) },
                 elevation = FloatingActionButtonDefaults.elevation(0.dp))
         }
-        if (status != BookStatus.ACTIVE) {
-            FloatingActionButton(
-                onClick = { onMove(model.id) }, shape = RoundedCornerShape(6.dp),
-                elevation = FloatingActionButtonDefaults.elevation(0.dp)
-            ) { Icon(Icons.Filled.Update, null) }
+        onMove?.let { action ->
+            if (status != BookStatus.ACTIVE) {
+                FloatingActionButton(
+                    onClick = { action(model.id) }, shape = RoundedCornerShape(6.dp),
+                    elevation = FloatingActionButtonDefaults.elevation(0.dp)
+                ) { Icon(Icons.Filled.Update, null) }
+            }
         }
         Spacer(Modifier.width(16.dp))
     }

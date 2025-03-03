@@ -58,7 +58,7 @@ fun Timeline(
             }
 
             // Отображение бронирований
-            bookings.forEach { booking ->
+            bookings.filter { it.status != BookStatus.CANCELLED }.forEach { booking ->
                 val startMinutes = booking.start.hour * 60 + booking.start.minute
                 val endMinutes = booking.end.hour * 60 + booking.end.minute
                 val startOffset = (startMinutes - startHour * 60) * minuteWidth

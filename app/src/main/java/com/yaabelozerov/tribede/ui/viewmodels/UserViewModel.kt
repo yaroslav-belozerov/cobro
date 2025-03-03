@@ -4,12 +4,16 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.ApiClient
 import com.yaabelozerov.tribede.data.DataStore
+import com.yaabelozerov.tribede.data.model.RescheduleBody
 import com.yaabelozerov.tribede.data.model.UserDto
+import com.yaabelozerov.tribede.data.model.toDomainModel
+import com.yaabelozerov.tribede.domain.model.BookingUI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,13 +25,15 @@ import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.UUID
 
 data class UserState(
     val user: UserDto? = null,
     val qrString: String? = null,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val books: List<BookingUI> = emptyList()
 )
 
 class UserViewModel(
@@ -36,6 +42,9 @@ class UserViewModel(
 ) : ViewModel() {
     private val _state = MutableStateFlow(UserState())
     val state = _state.asStateFlow()
+
+    private val _moveBookings = MutableStateFlow(listOf<BookingUI>())
+    val moveBookings = _moveBookings.asStateFlow()
 
     init {
         fetchUserInfo()
@@ -58,6 +67,33 @@ class UserViewModel(
                     file.delete()
                     fetchUserInfo()
                 }
+            }
+        }
+    }
+
+
+    fun getBookings(zoneId: String, seatId: String?) {
+        viewModelScope.launch {
+            Application.dataStore.getToken().first().let { token ->
+                val result = apiClient.getBookings(token, zoneId, seatId)
+                result.getOrNull()?.let { res ->
+                    _moveBookings.update {
+                        res.map { it.toDomainModel() }
+                    }
+                    Log.d("getBook", "getBookings in uservm: $res")
+                } ?: _moveBookings.update { emptyList() }
+                result.exceptionOrNull()?.printStackTrace()
+            }
+        }
+    }
+
+    fun move(from: LocalDateTime, to: LocalDateTime, bookId: String) {
+        viewModelScope.launch {
+            Application.dataStore.getToken().first().let { token ->
+                apiClient.rescheduleBook(token, RescheduleBody(
+                    from = "$from:00.000Z",
+                    to = "$to:00.000Z"
+                ), bookId)
             }
         }
     }
@@ -94,6 +130,25 @@ class UserViewModel(
                     }
                 }
                 _state.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    fun validateBook(zoneId: String, from: LocalDateTime, to: LocalDateTime, seatId: String?, callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            Application.dataStore.getToken().first().let { token ->
+                if (apiClient.validateId(
+                        token = token,
+                        from = from.toString(),
+                        id = zoneId,
+                        seatId = seatId,
+                        to = to.toString()
+                    ).also { it.exceptionOrNull()?.printStackTrace() }.isSuccess) {
+                    callback(true)
+                    fetchUserInfo()
+                } else {
+                    callback(false)
+                }
             }
         }
     }

@@ -75,6 +75,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yaabelozerov.tribede.R
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.SeatDto
+import com.yaabelozerov.tribede.domain.model.BookingUI
 import com.yaabelozerov.tribede.ui.components.CoworkingSpace
 import com.yaabelozerov.tribede.ui.components.MyButton
 import com.yaabelozerov.tribede.ui.components.MyTextField
@@ -82,6 +83,7 @@ import com.yaabelozerov.tribede.ui.components.ReservationMap
 import com.yaabelozerov.tribede.ui.components.SpaceType
 import com.yaabelozerov.tribede.ui.components.Timeline
 import com.yaabelozerov.tribede.ui.components.color
+import com.yaabelozerov.tribede.ui.viewmodels.MainState
 import com.yaabelozerov.tribede.ui.viewmodels.MainViewModel
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
 import java.time.Instant
@@ -98,6 +100,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
     // Преобразуем текущую дату в миллисекунды с начала эпохи
     val currentDateMillis =
         currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val currentMillis = Instant.now().toEpochMilli()
     val selectableDates = object : SelectableDates {
         override fun isSelectableDate(utcTimeMillis: Long): Boolean {
             // Разрешаем выбор только дат, которые не раньше текущей
@@ -112,7 +115,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
     val state by vm.state.collectAsState()
     var isBookingDialogOpen by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = currentDateMillis,
+        initialSelectedDateMillis = currentMillis,
         selectableDates = selectableDates
     )
     var chosenZone by remember { mutableStateOf<CoworkingSpace?>(null) }
@@ -187,7 +190,9 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                     }
                 }
                 if (chosenZone != null) {
-                    BookingModalBottomSheet(vm,
+                    BookingModalBottomSheet(vm.state.collectAsState().value.currentBookings,
+                        { vm.resetModal() },
+                        { p1, p2 -> vm.getBookings(p1, p2) },
                         datePickerState,
                         sheetState,
                         { isBookingDialogOpen = true },
@@ -226,7 +231,9 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingModalBottomSheet(
-    vm: MainViewModel,
+    currentBookings: List<BookingUI>,
+    onReset: () -> Unit,
+    onFetchBookings: (String, String?) -> Unit,
     datePickerState: DatePickerState,
     sheetState: SheetState,
     onOpenBooking: () -> Unit,
@@ -235,11 +242,9 @@ fun BookingModalBottomSheet(
     chosenSeat: SeatDto?,
     setChosenSeat: (SeatDto?) -> Unit,
 ) {
-
-    val state by vm.state.collectAsState()
     val seatPainter = rememberVectorPainter(ImageVector.vectorResource(R.drawable.seat))
-    val bookingsForToday = remember(state.currentBookings, datePickerState.selectedDateMillis) {
-        state.currentBookings.filter {
+    val bookingsForToday = remember(currentBookings, datePickerState.selectedDateMillis) {
+        currentBookings.filter {
             it.start.toLocalDate() == LocalDateTime.ofInstant(datePickerState.selectedDateMillis?.let {
                 Instant.ofEpochMilli(it)
             } ?: Instant.now(), ZoneId.systemDefault()).toLocalDate()
@@ -249,7 +254,8 @@ fun BookingModalBottomSheet(
         sheetState = sheetState, onDismissRequest = {
             setChosenZone(null)
             setChosenSeat(null)
-            vm.resetModal()
+//            vm.resetModal()
+            onReset()
             datePickerState.selectedDateMillis = Instant.now().toEpochMilli()
         }, containerColor = MaterialTheme.colorScheme.surfaceContainer
     ) {
@@ -294,9 +300,10 @@ fun BookingModalBottomSheet(
                                                 setChosenSeat(null)
                                             } else {
                                                 setChosenSeat(it)
-                                                vm.getBookings(
-                                                    zoneId = zone.id, seatId = it.id
-                                                )
+                                                onFetchBookings(zone.id, it.id)
+//                                                vm.getBookings(
+//                                                    zoneId = zone.id, seatId = it.id
+//                                                )
                                             }
                                         }
                                     }
@@ -381,7 +388,7 @@ fun BookingModalBottomSheet(
 }
 
 @Composable
-private fun BookingDialog(
+fun BookingDialog(
     chosenDate: LocalDateTime,
     onDismiss: () -> Unit,
     onClick: (BookRequestDTO) -> Unit,
@@ -577,8 +584,8 @@ private fun BookingDialog(
                                     onClick = {
                                         onClick(
                                             BookRequestDTO(
-                                                from = "${from.minusHours(3)}",
-                                                to = "${to.minusHours(3)}",
+                                                from = "${from.minusHours(3)}:00.000Z",
+                                                to = "${to.minusHours(3)}:00.000Z",
                                                 description = description
                                             )
                                         )

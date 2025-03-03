@@ -20,6 +20,7 @@ import com.yaabelozerov.tribede.ui.screen.UserDetailed
 import com.yaabelozerov.tribede.ui.screen.UserScreen
 import com.yaabelozerov.tribede.ui.util.Nav
 import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
+import com.yaabelozerov.tribede.ui.viewmodels.MainViewModel
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
 
 @Composable
@@ -32,7 +33,6 @@ fun App(
     val userViewModel: UserViewModel = viewModel()
     val userState by userViewModel.state.collectAsState()
     val adminVM: AdminViewModel = viewModel()
-
 
     NavHost(navCtrl, startDestination = Nav.BOOK.route, modifier = modifier, enterTransition = {
         fadeIn(
