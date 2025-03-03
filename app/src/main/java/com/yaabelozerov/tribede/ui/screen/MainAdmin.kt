@@ -12,15 +12,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.EventAvailable
+import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -37,11 +43,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
+import com.yaabelozerov.tribede.data.model.BookResponseDTO
 import com.yaabelozerov.tribede.domain.model.AdminBookingUI
 import com.yaabelozerov.tribede.domain.model.BookStatus
 import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,25 +74,51 @@ fun MainAdminScreen(vm: AdminViewModel = viewModel(), navigateToScan: () -> Unit
                 item {
                     Spacer(Modifier.height(16.dp))
                     Text("Все бронирования", style = MaterialTheme.typography.headlineMedium)
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(8.dp))
+                    HorizontalDivider()
                 }
-                itemsIndexed(state.bookings) { index, model ->
+                item {
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        items(state.zones) {
+                            FilterChip(
+                                selected = state.currentZones.contains(it),
+                                onClick = {
+                                    if (state.currentZones.contains(it)) {
+                                        vm.deleteFilterZone(it)
+                                    } else {
+                                        vm.addFilterZone(it)
+                                    }
+                                },
+                                label = { Text(it) },
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    HorizontalDivider()
+                }
+                val filteredBookings = state.bookings.filter { booking ->
+                    state.currentZones.isEmpty() || state.currentZones.contains(booking.zoneName)
+                }
+                itemsIndexed(filteredBookings) { index, model ->
                     AdminBookCard(model, onDelete = vm::deleteBooking)
-                    if (index != state.bookings.size - 1) {
+                    if (index != filteredBookings.size - 1) {
                         Spacer(Modifier.size(12.dp))
                         HorizontalDivider()
                         Spacer(Modifier.size(4.dp))
                     }
                 }
+                item {
+                    Spacer(Modifier.height(64.dp))
+                }
 
             }
 
-            LargeFloatingActionButton(
+            FloatingActionButton(
                 onClick = navigateToScan,
                 shape = RoundedCornerShape(6.dp),
                 modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 24.dp, end = 24.dp),
             ) {
-                Icon(Icons.Filled.QrCode, contentDescription = null, modifier = Modifier.size(36.dp))
+                Icon(Icons.Filled.QrCode, contentDescription = null, modifier = Modifier.padding(16.dp).size(36.dp))
             }
         }
     }
@@ -128,9 +168,99 @@ fun AdminBookCard(
                         Text("В процессе")
                     }
                 }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(24.dp)) {
+                        AsyncImage(model.userPhotoUrl, contentDescription = null,
+                            modifier = Modifier.fillMaxSize().clip(CircleShape),
+                            contentScale = ContentScale.Crop)
+
+                    }
+                    Text(model.username, style = MaterialTheme.typography.bodySmall)
+                }
             }
             Spacer(Modifier.width(16.dp))
             if (model.status != BookStatus.ACTIVE) {
+                FloatingActionButton(
+                    onClick = { onMove(model.id) }, shape = RoundedCornerShape(6.dp),
+                    elevation = FloatingActionButtonDefaults.elevation(0.dp)
+                ) { Icon(Icons.Filled.Update, null) }
+            }
+            FloatingActionButton(
+                onClick = { onDelete(model.id) }, shape = RoundedCornerShape(6.dp),
+                elevation = FloatingActionButtonDefaults.elevation(0.dp)
+            ) { Icon(Icons.Filled.Cancel, null) }
+
+
+
+        }
+    }
+}
+
+@Composable
+fun AdminBookCardForBookUI(
+    model: BookResponseDTO,
+    onMove: (String) -> Unit = {},
+    onDelete: (String) -> Unit = {},
+    ) {
+    // только Pending или Active
+
+    val startDateTime = LocalDateTime.ofInstant(Instant.parse(model.start), ZoneId.systemDefault())
+    val endDateTime = LocalDateTime.ofInstant(Instant.parse(model.end), ZoneId.systemDefault())
+    var minutes = ChronoUnit.MINUTES.between(startDateTime, endDateTime)
+    val hours = minutes / 60
+    minutes %= 60
+
+    val status = BookStatus.entries.getOrElse(model.status) { BookStatus.ACTIVE }
+
+    Column(Modifier.fillMaxWidth()) {
+        Text(model.zoneName, style = MaterialTheme.typography.titleMedium)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+
+                model.officeSeatNumber?.let {
+                    Text("Место $it", style = MaterialTheme.typography.titleSmall)
+                }
+                Text(
+                    "${startDateTime.toLocalDate()}"
+                )
+
+                Text(
+                    "c  ${startDateTime.hour.toString().padStart(2, '0')}:" +
+                            startDateTime.minute.toString().padStart(2, '0')
+                )
+
+                Text(
+                    "до ${endDateTime.hour.toString().padStart(2, '0')}:" +
+                            endDateTime.minute.toString().padStart(2, '0')
+                )
+
+                if (status == BookStatus.PENDING) {
+                    Row {
+                        Icon(Icons.Filled.HourglassTop, contentDescription = null)
+                        Text("Ждём вас")
+                    }
+                } else {
+                    if (status == BookStatus.CANCELLED) {
+                        Row {
+                            Icon(Icons.Filled.EventBusy, contentDescription = null)
+                            Text("Отменено")
+                        }
+                    } else if (status == BookStatus.ENDED) {
+                        Row {
+                            Icon(Icons.Filled.EventAvailable, contentDescription = null)
+                            Text("Завершено")
+                        }
+                    } else if (status == BookStatus.ACTIVE) {
+                        Row {
+                            Icon(Icons.Filled.PlayArrow, contentDescription = null)
+                            Text("В процессе")
+                        }
+                    }
+
+                }
+            }
+            Spacer(Modifier.width(16.dp))
+            if (status != BookStatus.ACTIVE) {
                 FloatingActionButton(
                     onClick = { onMove(model.id) }, shape = RoundedCornerShape(6.dp),
                     elevation = FloatingActionButtonDefaults.elevation(0.dp)
@@ -141,9 +271,6 @@ fun AdminBookCard(
                 ) { Icon(Icons.Filled.Cancel, null) }
 
             }
-
-
-
         }
     }
 }

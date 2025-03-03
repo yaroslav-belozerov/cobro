@@ -12,3 +12,10 @@ data class QrDto(
 data class ConfirmQr(
     val code: String
 )
+
+@Serializable
+data class QrConfirmResponse(
+    val bookId: String,
+    val needsPassport: Boolean,
+    val userId: String
+)

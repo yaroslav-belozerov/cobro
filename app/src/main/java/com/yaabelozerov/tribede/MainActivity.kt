@@ -36,7 +36,6 @@ import com.yaabelozerov.tribede.ui.components.MyButton
 import com.yaabelozerov.tribede.ui.screen.AuthScreen
 import com.yaabelozerov.tribede.ui.theme.AppTheme
 import com.yaabelozerov.tribede.ui.util.Nav
-import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
 import com.yaabelozerov.tribede.ui.viewmodels.AuthViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -105,30 +104,34 @@ class MainActivity : ComponentActivity() {
                         }
                     } else {
                         Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
-                            BottomAppBar {
-                                Nav.entries.forEach {
-                                    val selected = it == current
-                                    it.icon?.let { ic -> // если иконка добавлена в файл Nav,
-                                        // то он отобразит её в Bottom bar
-                                        NavigationBarItem(
-                                            icon = {
-                                                Icon(
-                                                    if (selected) ic.selectedIcon else ic.unselectedIcon,
-                                                    null,
-                                                    Modifier.size(30.dp)
-                                                )
-                                            },
-                                            onClick = {
-                                                navCtrl.navigate(it.route) {
-                                                    restoreState = true
-                                                    launchSingleTop = true
-                                                    popUpTo(Nav.BOOK.route) {
-                                                        saveState = true
+                            if (navCtrl.currentBackStackEntry?.destination?.route != Nav.USER_DETAILED.route &&
+                                navCtrl.currentBackStackEntry?.destination?.route != Nav.SCAN.route
+                            ) {
+                                BottomAppBar {
+                                    Nav.entries.forEach {
+                                        val selected = it == current
+                                        it.icon?.let { ic -> // если иконка добавлена в файл Nav,
+                                            // то он отобразит её в Bottom bar
+                                            NavigationBarItem(
+                                                icon = {
+                                                    Icon(
+                                                        if (selected) ic.selectedIcon else ic.unselectedIcon,
+                                                        null,
+                                                        Modifier.size(30.dp)
+                                                    )
+                                                },
+                                                onClick = {
+                                                    navCtrl.navigate(it.route) {
+                                                        restoreState = true
+                                                        launchSingleTop = true
+                                                        popUpTo(Nav.BOOK.route) {
+                                                            saveState = true
+                                                        }
                                                     }
-                                                }
-                                            },
-                                            selected = selected
-                                        )
+                                                },
+                                                selected = selected
+                                            )
+                                        }
                                     }
                                 }
                             }
