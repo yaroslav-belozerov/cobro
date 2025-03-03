@@ -35,14 +35,6 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
     init {
         fetchZones()
         fetchDecor()
-        viewModelScope.launch {
-        }
-    }
-
-    fun rescheduleBook(token: String, from: LocalDateTime, to: LocalDateTime, id: String) {
-        viewModelScope.launch {
-            api.rescheduleBook(token, RescheduleBody(from.toString(), to.toString()), id)
-        }
     }
 
     fun validateBook(zoneId: String, from: LocalDateTime, to: LocalDateTime, seatId: String?, callback: (Boolean) -> Unit) {
@@ -63,14 +55,13 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
         }
     }
 
-
     private fun fetchZones() {
         viewModelScope.launch {
             Application.dataStore.getToken().distinctUntilChanged().collect { token ->
                 val result = api.getZones(token)
                 result.getOrNull()?.let {
                     val zones = it.map {
-                        println("token $token")
+                        println("zone $it")
                         if (it.type == "Office") {
                             val seats = api.getSeatsForOfficeZone(token, it.id).also { it.exceptionOrNull()?.printStackTrace() }
                             it.toSpace(seats.getOrNull() ?: emptyList()) //TODO потом починить

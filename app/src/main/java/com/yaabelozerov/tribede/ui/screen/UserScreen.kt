@@ -42,6 +42,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberDateRangePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -61,6 +62,7 @@ import coil3.compose.AsyncImage
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.BookResponseDTO
+import com.yaabelozerov.tribede.data.model.UserRole
 import com.yaabelozerov.tribede.domain.model.BookStatus
 import com.yaabelozerov.tribede.ui.components.BookCard
 import com.yaabelozerov.tribede.ui.components.ClickableBookCard
@@ -163,14 +165,16 @@ fun UserScreen(vm: UserViewModel) {
                     )
                 }
                 item { Text(userInfo.name, style = MaterialTheme.typography.headlineSmall) }
-                item { Text(userInfo.email) }
-                //            item {
-                //                Text(UserRole.entries[userInfo.role].name)
-                //            }
+                item { Text(userInfo.email, style = MaterialTheme.typography.titleLarge) }
+                if (UserRole.entries[userInfo.role] == UserRole.INTERNAL) {
+                    item {
+                        Text("Внутренний пользователь", color = MaterialTheme.colorScheme.tertiary)
+                    }
+                }
                 userInfo.books?.let {
                     item {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Мои бронирования", style = MaterialTheme.typography.headlineSmall)
+                            Text("Мои брони", style = MaterialTheme.typography.headlineSmall)
                             Spacer(Modifier.size(8.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Spacer(Modifier.height(4.dp))
@@ -260,7 +264,7 @@ fun UserScreen(vm: UserViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoveBottomSheet(datePickerState: DatePickerState, onDismiss: () -> Unit, onOpen: () -> Unit) {
-    ModalBottomSheet(onDismissRequest = {
+    ModalBottomSheet(sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), onDismissRequest = {
         onDismiss()
     }, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
         Column {
@@ -271,7 +275,7 @@ fun MoveBottomSheet(datePickerState: DatePickerState, onDismiss: () -> Unit, onO
             )
             MyButton(onClick = {
                 onOpen()
-            }, text = "Перенести", modifier = Modifier.fillMaxWidth())
+            }, text = "Перенести", modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp))
         }
     }
 }

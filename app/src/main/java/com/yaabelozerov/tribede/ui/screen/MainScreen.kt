@@ -75,6 +75,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yaabelozerov.tribede.R
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.SeatDto
+import com.yaabelozerov.tribede.data.model.UserRole
 import com.yaabelozerov.tribede.domain.model.BookingUI
 import com.yaabelozerov.tribede.ui.components.CoworkingSpace
 import com.yaabelozerov.tribede.ui.components.MyButton
@@ -95,7 +96,7 @@ import kotlin.math.sqrt
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewModel()) {
+fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel) {
     val currentDate = LocalDate.now()
     // Преобразуем текущую дату в миллисекунды с начала эпохи
     val currentDateMillis =
@@ -112,6 +113,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
             return year >= currentDate.year
         }
     }
+    val userRole = userVm.state.collectAsState().value.user?.role?.let { UserRole.entries.getOrNull(it) }
     val state by vm.state.collectAsState()
     var isBookingDialogOpen by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
@@ -142,6 +144,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                     }
                 }
                 ReservationMap(
+                    userRole,
                     chosenZone, currentChosenType, {
                         if (chosenZone == it) {
                             chosenZone = null
@@ -210,7 +213,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                 BookingDialog(LocalDateTime.ofInstant(datePickerState.selectedDateMillis?.let {
                     Instant.ofEpochMilli(it)
                 } ?: Instant.now(), ZoneId.systemDefault()),
-                    onDismiss = { isBookingDialogOpen = false },
+                    onDismiss = { isBookingDialogOpen = false; chosenZone = null; chosenSeat = null },
                     onClick = { req ->
                         chosenZone?.id?.let {
                             vm.book(

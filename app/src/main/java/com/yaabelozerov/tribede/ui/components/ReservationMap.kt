@@ -41,6 +41,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yaabelozerov.tribede.data.model.SeatDto
+import com.yaabelozerov.tribede.data.model.UserRole
 import com.yaabelozerov.tribede.data.model.ZoneDto
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -103,6 +104,7 @@ data class Pos(val x: Float, val y: Float, val width: Float, val height: Float)
 
 @Composable
 fun ReservationMap(
+    userRole: UserRole?,
     chosen: CoworkingSpace?,
     currentChosenType: SpaceType?,
     onClick: (CoworkingSpace) -> Unit,
@@ -141,7 +143,7 @@ fun ReservationMap(
                 println("$x, $y")
                 list.forEach {
                     if (it.position.x <= x && x <= (it.position.width + it.position.x) && it.position.y <= y && y <= (it.position.height + it.position.y)) {
-                        if (it.type != SpaceType.MISC) {
+                        if (it.type != SpaceType.MISC && !(userRole == UserRole.CLIENT && it.isCompanyRestricted)) {
                             onClick(it)
                         }
                     }
@@ -149,14 +151,18 @@ fun ReservationMap(
             })
         }) {
         list.forEach { zone ->
-            val color = zone.color
-            drawRoundRect(color.copy(currentChosenType?.let { if (it == zone.type) 1f else 0.5f }
-                ?: 1f), cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()), topLeft = Offset(
-                (zone.position.x + 0.005f) * width, (zone.position.y + 0.005f) * height
-            ), size = Size(
-                width = (zone.position.width - 0.01f) * width,
-                height = (zone.position.height - 0.01f) * height
-            ))
+            val isAllowed = !(userRole == UserRole.CLIENT && zone.isCompanyRestricted)
+            val color =
+                if (isAllowed) zone.color.copy(currentChosenType?.let { if (it == zone.type) 1f else 0.5f } ?: 1f)
+                else Color(0xffe0e0e0)
+            drawRoundRect(
+                color, cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()), topLeft = Offset(
+                    (zone.position.x + 0.005f) * width, (zone.position.y + 0.005f) * height
+                ), size = Size(
+                    width = (zone.position.width - 0.01f) * width,
+                    height = (zone.position.height - 0.01f) * height
+                )
+            )
             if (zone == chosen) {
                 drawRoundRect(
                     bgColor,
@@ -171,7 +177,7 @@ fun ReservationMap(
                     )
                 )
             }
-            if (currentChosenType == zone.type) {
+            if (currentChosenType == zone.type && !(zone.isCompanyRestricted && userRole == UserRole.CLIENT)) {
                 drawRoundRect(
                     Color(0xff2f3c99),
                     style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round),
@@ -415,7 +421,7 @@ fun ReservationMapPreview() {
     )
     var id by remember { mutableStateOf<CoworkingSpace?>(null) }
     ReservationMap(
-        id, null, { id = it }, lst, listOf(
+        UserRole.ADMIN, id, null, { id = it }, lst, listOf(
             Decoration(
                 type = "Icon", name = "toilet", x = 0.265f, y = 0.355f, width = null, height = null
             ), Decoration(
