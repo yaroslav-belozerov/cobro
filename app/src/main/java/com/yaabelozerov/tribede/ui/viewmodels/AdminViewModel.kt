@@ -16,7 +16,9 @@ import kotlinx.coroutines.launch
 
 data class AdminState(
     val zones: List<String> = emptyList(),
-    val bookings: List<AdminBookingUI> = emptyList()
+    val bookings: List<AdminBookingUI> = emptyList(),
+
+    val isLoading: Boolean = false
 
 )
 
@@ -32,6 +34,7 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
         viewModelScope.launch(Dispatchers.IO) {
             Application.dataStore.getToken().first().let { token ->
                 api.deleteBook(token, id)
+                fetchData()
             }
         }
     }
@@ -44,8 +47,9 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
         }
     }
 
-    private fun fetchData() {
+    fun fetchData() {
         viewModelScope.launch(Dispatchers.IO) {
+            _state.update { it.copy(isLoading = true) }
             Application.dataStore.getToken().first().let { token ->
                 val result = api.getAdminBookings(token)
                 result.getOrNull()?.let {
@@ -56,6 +60,7 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
                 }
                 result.exceptionOrNull()?.printStackTrace()
             }
+            _state.update { it.copy(isLoading = false) }
         }
     }
 }

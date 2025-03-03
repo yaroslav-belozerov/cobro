@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Update
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -26,8 +28,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -36,41 +43,46 @@ import com.yaabelozerov.tribede.domain.model.AdminBookingUI
 import com.yaabelozerov.tribede.domain.model.BookStatus
 import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainAdminScreen(vm: AdminViewModel = viewModel(), navigateToScan: () -> Unit) {
     val state = vm.state.collectAsState().value
-    Box {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            item {
-                Spacer(Modifier.height(16.dp))
-                Text("Все бронирования", style = MaterialTheme.typography.headlineMedium)
-                Spacer(Modifier.height(16.dp))
-            }
-            itemsIndexed(state.bookings) { index, model ->
-                AdminBookCard(model, onDelete = vm::deleteBooking)
-                if (index != state.bookings.size - 1) {
-                    Spacer(Modifier.size(12.dp))
-                    HorizontalDivider()
-                    Spacer(Modifier.size(4.dp))
+    var isRefreshing by remember { mutableStateOf(false) }
+    PullToRefreshBox(state.isLoading, onRefresh = vm::fetchData) {
+        Box(Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                item {
+                    Spacer(Modifier.height(16.dp))
+                    Text("Все бронирования", style = MaterialTheme.typography.headlineMedium)
+                    Spacer(Modifier.height(16.dp))
                 }
+                itemsIndexed(state.bookings) { index, model ->
+                    AdminBookCard(model, onDelete = vm::deleteBooking)
+                    if (index != state.bookings.size - 1) {
+                        Spacer(Modifier.size(12.dp))
+                        HorizontalDivider()
+                        Spacer(Modifier.size(4.dp))
+                    }
+                }
+
             }
 
-        }
-
-        LargeFloatingActionButton(
-            onClick = navigateToScan,
-            shape = RoundedCornerShape(6.dp),
-            modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 24.dp, end = 24.dp),
-        ) {
-            Icon(Icons.Filled.QrCode, contentDescription = null, modifier = Modifier.size(24.dp))
+            LargeFloatingActionButton(
+                onClick = navigateToScan,
+                shape = RoundedCornerShape(6.dp),
+                modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 24.dp, end = 24.dp),
+            ) {
+                Icon(Icons.Filled.QrCode, contentDescription = null, modifier = Modifier.size(36.dp))
+            }
         }
     }
+
 }
 
 @Composable
