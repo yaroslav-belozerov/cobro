@@ -31,8 +31,8 @@ import java.time.temporal.ChronoUnit
 
 @Composable
 fun BookCard(model: BookResponseDTO, onClick: (String) -> Unit = {}) {
-    val startDateTime = LocalDateTime.ofInstant(Instant.parse(model.start), ZoneId.systemDefault())
-    val endDateTime = LocalDateTime.ofInstant(Instant.parse(model.end), ZoneId.systemDefault())
+    val startDateTime = LocalDateTime.ofInstant(Instant.parse(model.start), ZoneId.of("UTC"))
+    val endDateTime = LocalDateTime.ofInstant(Instant.parse(model.end), ZoneId.of("UTC"))
     var minutes = ChronoUnit.MINUTES.between(startDateTime, endDateTime)
     val hours = minutes / 60
     minutes %= 60
@@ -42,7 +42,7 @@ fun BookCard(model: BookResponseDTO, onClick: (String) -> Unit = {}) {
 
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(model.zoneName, style = MaterialTheme.typography.titleMedium)
+            Text(model.zoneName, style = MaterialTheme.typography.titleLarge)
 //            model.seat?.let {
 //                Text(it, style = MaterialTheme.typography.titleSmall)
 //            }
@@ -58,19 +58,19 @@ fun BookCard(model: BookResponseDTO, onClick: (String) -> Unit = {}) {
                 }
             } else {
                 if (status == BookStatus.CANCELLED) {
-                    Row {
-                        Icon(Icons.Filled.EventBusy, contentDescription = null)
-                        Text("Отменено")
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Icon(Icons.Filled.EventBusy, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
+                        Text("Отменено", color = MaterialTheme.colorScheme.tertiary)
                     }
                 } else if (status == BookStatus.ENDED) {
-                    Row {
-                        Icon(Icons.Filled.EventAvailable, contentDescription = null)
-                        Text("Завершено")
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Icon(Icons.Filled.EventAvailable, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
+                        Text("Завершено", color = MaterialTheme.colorScheme.tertiary)
                     }
                 } else if (status == BookStatus.ACTIVE) {
-                    Row {
-                        Icon(Icons.Filled.PlayArrow, contentDescription = null)
-                        Text("В процессе")
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
+                        Text("В процессе", color = MaterialTheme.colorScheme.tertiary)
                     }
                 }
 
@@ -84,9 +84,9 @@ fun BookCard(model: BookResponseDTO, onClick: (String) -> Unit = {}) {
         }
         Spacer(Modifier.width(16.dp))
         if (minutes == 0L) {
-            Text("$hours ч", style = MaterialTheme.typography.headlineLarge)
+            Text("$hours ч", style = MaterialTheme.typography.titleLarge)
         } else {
-            Text("$hours ч $minutes мин", style = MaterialTheme.typography.headlineLarge)
+            Text("$hours ч $minutes мин", style = MaterialTheme.typography.titleLarge)
         }
 
     }

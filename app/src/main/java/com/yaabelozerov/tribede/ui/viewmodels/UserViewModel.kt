@@ -26,7 +26,8 @@ import java.util.UUID
 
 data class UserState(
     val user: UserDto? = null,
-    val qrString: String? = null
+    val qrString: String? = null,
+    val isLoading: Boolean = false
 )
 
 class UserViewModel(
@@ -76,11 +77,11 @@ class UserViewModel(
     fun fetchUserInfo() {
         viewModelScope.launch {
             dataStore.getToken().distinctUntilChanged().collect {
+                _state.update { it.copy(isLoading = true) }
                 it.takeIf { it.isNotEmpty() }?.let {
                     val result = apiClient.getUser(it)
                     println("result: $result")
                     result.getOrNull()?.let {
-
                         _state.update { state ->
                             state.copy(user = it)
                         }
@@ -92,6 +93,7 @@ class UserViewModel(
                         }
                     }
                 }
+                _state.update { it.copy(isLoading = false) }
             }
         }
     }

@@ -19,10 +19,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,6 +50,7 @@ import com.yaabelozerov.tribede.ui.components.QrShowWidget
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserScreen(vm: UserViewModel) {
     val uiState by vm.state.collectAsState()
@@ -66,98 +73,104 @@ fun UserScreen(vm: UserViewModel) {
         )
     }
     uiState.user?.let { userInfo ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+        PullToRefreshBox(
+            isRefreshing = uiState.isLoading,
+            onRefresh = { vm.fetchUserInfo() }
         ) {
-            item {
-                Text("Профиль", style = MaterialTheme.typography.headlineMedium)
-                AsyncImage(
-                    model = userInfo.avatarUrl,
-                    contentDescription = "avatar",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .clickable {
-                            picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                        },
-                    contentScale = ContentScale.Crop
-                )
-            }
-            item { Text(userInfo.name, style = MaterialTheme.typography.headlineSmall) }
-            item { Text(userInfo.email) }
-            //            item {
-            //                Text(UserRole.entries[userInfo.role].name)
-            //            }
-            userInfo.books?.let {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 item {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Мои брониирования")
-                        Spacer(Modifier.size(8.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Spacer(Modifier.height(4.dp))
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(2.dp)
-                                    .background(color = Color.Gray)
+                    Box(Modifier.fillMaxWidth()) {
+                        Text("Профиль", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.align(
+                            Alignment.Center))
+                        IconButton(modifier = Modifier.align(Alignment.CenterEnd), onClick = {
+                            scope.launch {
+                                Application.dataStore.apply {
+                                    saveToken("")
+                                    saveIsAdmin(false)
+                                }
+                            }
+                        }) { Icon(Icons.AutoMirrored.Default.Logout, contentDescription = "logout") }
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    AsyncImage(
+                        model = userInfo.avatarUrl,
+                        contentDescription = "avatar",
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .clickable {
+                                picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                            },
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                item { Text(userInfo.name, style = MaterialTheme.typography.headlineSmall) }
+                item { Text(userInfo.email) }
+                //            item {
+                //                Text(UserRole.entries[userInfo.role].name)
+                //            }
+                userInfo.books?.let {
+                    item {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Мои бронирования", style = MaterialTheme.typography.headlineSmall)
+                            Spacer(Modifier.size(8.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Spacer(Modifier.height(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(2.dp)
+                                        .background(color = Color.Gray)
 
-                            )
+                                )
+                            }
+
+                        }
+                    }
+                    val pending = userInfo.books.filter { BookStatus.entries[it.status] == BookStatus.PENDING }
+                    itemsIndexed(pending) { index, book ->
+                        BookCard(book, { vm.getQr(it); showQrDialog = true })
+                        if (index != pending.size - 1) {
+                            Spacer(Modifier.size(14.dp))
+                            HorizontalDivider()
+                            Spacer(Modifier.size(4.dp))
                         }
 
                     }
-                }
-                val pending = userInfo.books.filter { BookStatus.entries[it.status] == BookStatus.PENDING }
-                itemsIndexed(pending) { index, book ->
-                    BookCard(book, { vm.getQr(it); showQrDialog = true })
-                    if (index != pending.size - 1) {
-                        Spacer(Modifier.size(12.dp))
+                    item {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("История", style = MaterialTheme.typography.headlineSmall)
+                            Spacer(Modifier.size(8.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Spacer(Modifier.height(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(2.dp)
+                                        .background(color = Color.Gray)
+
+                                )
+                            }
+                        }
+                    }
+                    items(userInfo.books.filter { BookStatus.entries[it.status] != BookStatus.PENDING }) {
+                        BookCard(it,  { vm.getQr(it) })
+                        Spacer(Modifier.size(14.dp))
                         HorizontalDivider()
                         Spacer(Modifier.size(4.dp))
                     }
-
-                }
-                item {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("История")
-                        Spacer(Modifier.size(8.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Spacer(Modifier.height(4.dp))
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(2.dp)
-                                    .background(color = Color.Gray)
-
-                            )
-                        }
-                    }
-                }
-                items(userInfo.books.filter { BookStatus.entries[it.status] != BookStatus.PENDING }) {
-                    BookCard(it,  { vm.getQr(it) })
-                }
-            } ?: item {
-                Text(
-                    "Здесь будут ваши бронирования",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-
-
-            item {
-                TextButton(onClick = {
-                    scope.launch {
-                        Application.dataStore.apply {
-                            saveToken("")
-                            saveIsAdmin(false)
-                        }
-                    }
-                }) {
-                    Text("Выйти")
+                } ?: item {
+                    Text(
+                        "Здесь будут ваши бронирования",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
             }
         }
