@@ -108,13 +108,13 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
         }
     }
 
-    fun book(req: BookRequestDTO, zoneId: String, seatId: String?, callback: () -> Unit) {
+    fun book(req: BookRequestDTO, zoneId: String, seatId: String?, callback: (Boolean) -> Unit) {
         viewModelScope.launch {
             Application.dataStore.getToken().first().let { token ->
                 println("book $token $req $zoneId $seatId")
-                api.postBook(token, req, zoneId, seatId).exceptionOrNull()?.printStackTrace()
+                val res = api.postBook(token, req, zoneId, seatId).also { it.exceptionOrNull()?.printStackTrace() }
                 getBookings(zoneId, seatId)
-                callback()
+                callback(res.isSuccess)
             }
         }
     }

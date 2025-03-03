@@ -1,5 +1,6 @@
 package com.yaabelozerov.tribede.ui.screen
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -29,12 +30,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.EditCalendar
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
@@ -81,7 +84,6 @@ import com.yaabelozerov.tribede.ui.components.Timeline
 import com.yaabelozerov.tribede.ui.components.color
 import com.yaabelozerov.tribede.ui.viewmodels.MainViewModel
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
-import kotlinx.coroutines.delay
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -199,6 +201,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
 
         if (isBookingDialogOpen) {
             chosenZone?.let { zone ->
+                var isBookingSuccess by remember { mutableStateOf<Boolean?>(null) }
                 BookingDialog(LocalDateTime.ofInstant(datePickerState.selectedDateMillis?.let {
                     Instant.ofEpochMilli(it)
                 } ?: Instant.now(), ZoneId.systemDefault()),
@@ -209,9 +212,10 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                                 req = req, zoneId = it, seatId = chosenSeat?.id
                             ) {
                                 userVm.fetchUserInfo()
+                                isBookingSuccess = it
                             }
                         }
-                    }, vm = vm, zoneId = zone.id, seatId = chosenSeat?.id
+                    }, vm = vm, zoneId = zone.id, seatId = chosenSeat?.id, bookingSuccess = isBookingSuccess
                 )
             }
 
@@ -383,7 +387,8 @@ private fun BookingDialog(
     onClick: (BookRequestDTO) -> Unit,
     vm: MainViewModel,
     zoneId: String,
-    seatId: String?
+    seatId: String?,
+    bookingSuccess: Boolean?
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card {
@@ -392,175 +397,195 @@ private fun BookingDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    "Бронь на ${chosenDate.toLocalDate()}",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                val hours = (10..21).toList()
-                val minutes = listOf(0, 15, 30, 45)
-                val hourStartPager = rememberPagerState { hours.size }
-                val minuteStartPager = rememberPagerState { minutes.size }
-
-                Text("Начало", style = MaterialTheme.typography.headlineSmall)
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    VerticalPager(
-                        hourStartPager,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                        modifier = Modifier
-                            .clip(MaterialTheme.shapes.small)
-                            .height(56.dp)
-                            .width(72.dp)
-                            .background(MaterialTheme.colorScheme.surfaceDim),
-                    ) {
-                        Row(
-                            modifier = Modifier.height(56.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                bookingSuccess.let { isSuccess ->
+                    when (isSuccess) {
+                        true -> {
+                            Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(64.dp))
+                            Spacer(Modifier.height(16.dp))
                             Text(
-                                hours[it].toString().padStart(2, '0'),
-                                style = MaterialTheme.typography.titleLarge
+                                "Бронь на ${chosenDate.toLocalDate()} успешна",
+                                style = MaterialTheme.typography.headlineMedium
                             )
+                            MyButton(onClick = onDismiss, text = "OK")
                         }
-                    }
-                    Text(":", style = MaterialTheme.typography.titleLarge)
-                    VerticalPager(
-                        minuteStartPager,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                        modifier = Modifier
-                            .clip(MaterialTheme.shapes.small)
-                            .height(56.dp)
-                            .width(72.dp)
-                            .background(MaterialTheme.colorScheme.surfaceDim),
-                    ) {
-                        Row(
-                            modifier = Modifier.height(56.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        false -> {
+                            Icon(Icons.Default.Error, contentDescription = null, modifier = Modifier.size(64.dp))
+                            Spacer(Modifier.height(16.dp))
                             Text(
-                                minutes[it].toString().padStart(2, '0'),
-                                style = MaterialTheme.typography.titleLarge
+                                "Не удалось забронировать",
+                                style = MaterialTheme.typography.headlineMedium
                             )
+                            MyButton(onClick = onDismiss, text = "OK")
                         }
-                    }
-                }
-
-                val hourEndPager = rememberPagerState { hours.size }
-                val minuteEndPager = rememberPagerState { minutes.size }
-                Text("Конец", style = MaterialTheme.typography.headlineSmall)
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    VerticalPager(
-                        hourEndPager,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                        modifier = Modifier
-                            .clip(MaterialTheme.shapes.small)
-                            .height(56.dp)
-                            .width(72.dp)
-                            .background(MaterialTheme.colorScheme.surfaceDim),
-                    ) {
-                        Row(
-                            modifier = Modifier.height(56.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        null -> {
                             Text(
-                                hours[it].toString().padStart(2, '0'),
-                                style = MaterialTheme.typography.titleLarge
+                                "Бронь на ${chosenDate.toLocalDate()}",
+                                style = MaterialTheme.typography.headlineMedium
                             )
-                        }
-                    }
-                    Text(":", style = MaterialTheme.typography.titleLarge)
-                    VerticalPager(
-                        minuteEndPager,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                        modifier = Modifier
-                            .clip(MaterialTheme.shapes.small)
-                            .height(56.dp)
-                            .width(72.dp)
-                            .background(MaterialTheme.colorScheme.surfaceDim),
-                    ) {
-                        Row(
-                            modifier = Modifier.height(56.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                minutes[it].toString().padStart(2, '0'),
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                        }
-                    }
-                }
+                            val hours = (10..21).toList()
+                            val minutes = listOf(0, 15, 30, 45)
+                            val hourStartPager = rememberPagerState { hours.size }
+                            val minuteStartPager = rememberPagerState { minutes.size }
 
-                Column {
-                    var description by remember { mutableStateOf("") }
-                    MyTextField(
-                        description,
-                        { description = it },
-                        placeholder = "Комментарии к брони",
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                            Text("Начало", style = MaterialTheme.typography.headlineSmall)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                VerticalPager(
+                                    hourStartPager,
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                    modifier = Modifier
+                                        .clip(MaterialTheme.shapes.small)
+                                        .height(56.dp)
+                                        .width(72.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceDim),
+                                ) {
+                                    Row(
+                                        modifier = Modifier.height(56.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            hours[it].toString().padStart(2, '0'),
+                                            style = MaterialTheme.typography.titleLarge
+                                        )
+                                    }
+                                }
+                                Text(":", style = MaterialTheme.typography.titleLarge)
+                                VerticalPager(
+                                    minuteStartPager,
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                    modifier = Modifier
+                                        .clip(MaterialTheme.shapes.small)
+                                        .height(56.dp)
+                                        .width(72.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceDim),
+                                ) {
+                                    Row(
+                                        modifier = Modifier.height(56.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            minutes[it].toString().padStart(2, '0'),
+                                            style = MaterialTheme.typography.titleLarge
+                                        )
+                                    }
+                                }
+                            }
 
-                    var errorMessage by remember { mutableStateOf("") }
+                            val hourEndPager = rememberPagerState { hours.size }
+                            val minuteEndPager = rememberPagerState { minutes.size }
+                            Text("Конец", style = MaterialTheme.typography.headlineSmall)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                VerticalPager(
+                                    hourEndPager,
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                    modifier = Modifier
+                                        .clip(MaterialTheme.shapes.small)
+                                        .height(56.dp)
+                                        .width(72.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceDim),
+                                ) {
+                                    Row(
+                                        modifier = Modifier.height(56.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            hours[it].toString().padStart(2, '0'),
+                                            style = MaterialTheme.typography.titleLarge
+                                        )
+                                    }
+                                }
+                                Text(":", style = MaterialTheme.typography.titleLarge)
+                                VerticalPager(
+                                    minuteEndPager,
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                    modifier = Modifier
+                                        .clip(MaterialTheme.shapes.small)
+                                        .height(56.dp)
+                                        .width(72.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceDim),
+                                ) {
+                                    Row(
+                                        modifier = Modifier.height(56.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            minutes[it].toString().padStart(2, '0'),
+                                            style = MaterialTheme.typography.titleLarge
+                                        )
+                                    }
+                                }
+                            }
 
-                    val from = chosenDate.withHour(hours[hourStartPager.currentPage])
-                        .withMinute(minutes[minuteStartPager.currentPage])
-                    val to = chosenDate.withHour(hours[hourEndPager.currentPage])
-                        .withMinute(minutes[minuteEndPager.currentPage])
-
-                    val deltaMins =
-                        (hours[hourEndPager.currentPage] - hours[hourStartPager.currentPage]) * 60 + (minutes[minuteEndPager.currentPage] - minutes[minuteStartPager.currentPage])
-                    val delta = if (deltaMins >= 60) {
-                        "${deltaMins / 60} ч." + if (deltaMins % 60 > 0) " ${deltaMins % 60} мин." else ""
-                    } else "$deltaMins мин."
-
-                    if (from.isBefore(LocalDateTime.now()) || to.isBefore(LocalDateTime.now())) {
-                        errorMessage = "Время должно быть в будущем"
-                    }
-                    if (deltaMins < 0) {
-                        errorMessage = "Время конца должно быть после времени начала"
-                    }
-                    var ok by remember { mutableStateOf(false) }
-                    val notSpinnin =
-                        (!minuteEndPager.isScrollInProgress && !minuteStartPager.isScrollInProgress && !hourStartPager.isScrollInProgress && !hourEndPager.isScrollInProgress)
-                    LaunchedEffect(notSpinnin) {
-                        if (notSpinnin) {
-                            ok = false
-                            vm.validateBook(
-                                zoneId = zoneId,
-                                seatId = seatId,
-                                from = from.minusHours(3),
-                                to = to.minusHours(3),
-                            ) { ok = it }
-                        }
-                    }
-                    val enabled =
-                        deltaMins > 0 && from.isAfter(LocalDateTime.now()) && from.isAfter(
-                            LocalDateTime.now()
-                        ) && ok && notSpinnin
-                    MyButton(
-                        onClick = {
-                            onClick(
-                                BookRequestDTO(
-                                    from = "${from.minusHours(3)}",
-                                    to = "${to.minusHours(3)}",
-                                    description = description
+                            Column {
+                                var description by remember { mutableStateOf("") }
+                                MyTextField(
+                                    description,
+                                    { description = it },
+                                    placeholder = "Комментарии к брони",
+                                    modifier = Modifier.fillMaxWidth()
                                 )
-                            )
-                            onDismiss()
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = enabled && ok,
-                        text = if (enabled) "Подтвердить ($delta)" else "Нельзя",
-                        icon = if (enabled) Icons.Default.CheckCircle else null
-                    )
+
+                                var errorMessage by remember { mutableStateOf("") }
+
+                                val from = chosenDate.withHour(hours[hourStartPager.currentPage])
+                                    .withMinute(minutes[minuteStartPager.currentPage])
+                                val to = chosenDate.withHour(hours[hourEndPager.currentPage])
+                                    .withMinute(minutes[minuteEndPager.currentPage])
+
+                                val deltaMins =
+                                    (hours[hourEndPager.currentPage] - hours[hourStartPager.currentPage]) * 60 + (minutes[minuteEndPager.currentPage] - minutes[minuteStartPager.currentPage])
+                                val delta = if (deltaMins >= 60) {
+                                    "${deltaMins / 60} ч." + if (deltaMins % 60 > 0) " ${deltaMins % 60} мин." else ""
+                                } else "$deltaMins мин."
+
+                                if (from.isBefore(LocalDateTime.now()) || to.isBefore(LocalDateTime.now())) {
+                                    errorMessage = "Время должно быть в будущем"
+                                }
+                                if (deltaMins < 0) {
+                                    errorMessage = "Время конца должно быть после времени начала"
+                                }
+                                var ok by remember { mutableStateOf(false) }
+                                val notSpinnin =
+                                    (!minuteEndPager.isScrollInProgress && !minuteStartPager.isScrollInProgress && !hourStartPager.isScrollInProgress && !hourEndPager.isScrollInProgress)
+                                LaunchedEffect(notSpinnin) {
+                                    if (notSpinnin) {
+                                        ok = false
+                                        vm.validateBook(
+                                            zoneId = zoneId,
+                                            seatId = seatId,
+                                            from = from.minusHours(3),
+                                            to = to.minusHours(3),
+                                        ) { ok = it }
+                                    }
+                                }
+                                val enabled =
+                                    deltaMins > 0 && from.isAfter(LocalDateTime.now()) && from.isAfter(
+                                        LocalDateTime.now()
+                                    ) && ok && notSpinnin
+                                MyButton(
+                                    onClick = {
+                                        onClick(
+                                            BookRequestDTO(
+                                                from = "${from.minusHours(3)}",
+                                                to = "${to.minusHours(3)}",
+                                                description = description
+                                            )
+                                        )
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    enabled = enabled && ok,
+                                    text = if (enabled) "Подтвердить ($delta)" else "Нельзя",
+                                    icon = if (enabled) Icons.Default.CheckCircle else null
+                                )
 //                    AnimatedVisibility(!ok) {
 //                        Text(
 //                            "На это время уже есть бронь",
@@ -568,6 +593,9 @@ private fun BookingDialog(
 //                            color = MaterialTheme.colorScheme.error
 //                        )
 //                    }
+                            }
+                        }
+                    }
                 }
             }
         }
