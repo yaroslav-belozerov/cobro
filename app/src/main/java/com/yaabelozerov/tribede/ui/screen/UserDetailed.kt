@@ -73,7 +73,6 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
             item {
                 Text("Паспорт", style = MaterialTheme.typography.headlineMedium)
                 Row {
-                    AsyncImage()
                 }
             }
             item {
