@@ -1,5 +1,6 @@
 package com.yaabelozerov.tribede.ui
 
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
@@ -26,14 +27,20 @@ fun App(
     modifier: Modifier = Modifier,
     navCtrl: NavHostController,
     hasCameraPermission: Boolean,
-    askForPermission: () -> Unit
+    askForPermission: () -> Unit,
 ) {
     val userViewModel: UserViewModel = viewModel()
     val userState by userViewModel.state.collectAsState()
     val adminVM: AdminViewModel = viewModel()
 
 
-    NavHost(navCtrl, startDestination = Nav.BOOK.route, modifier = modifier) {
+    NavHost(navCtrl, startDestination = Nav.BOOK.route, modifier = modifier, enterTransition = {
+        fadeIn(
+            tween(200)
+        )
+    }, exitTransition = {
+        fadeOut(tween(200))
+    }) {
         composable(Nav.BOOK.route) {
             Application.dataStore.getIsAdmin().collectAsState(null).value.let { isAdmin ->
                 if (isAdmin != null) {
@@ -68,15 +75,11 @@ fun App(
             }
         }
 
-        composable(
-            Nav.SCAN.route,
-            enterTransition = { fadeIn() },
-            exitTransition = { fadeOut() }
+        composable(Nav.SCAN.route, enterTransition = { fadeIn() }, exitTransition = { fadeOut() }
 
         ) {
 
-            QrPage(
-                hasCameraPermission,
+            QrPage(hasCameraPermission,
                 goBack = { navCtrl.navigateUp() },
                 vm = adminVM,
                 navigateToUser = { navCtrl.navigate(Nav.USER_DETAILED.route) })

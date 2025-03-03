@@ -73,7 +73,11 @@ fun BookCard(model: BookResponseDTO, onClick: (String) -> Unit = {}) {
                         Text("В процессе", color = MaterialTheme.colorScheme.tertiary)
                     }
                 }
-
+            }
+            if (minutes == 0L) {
+                Text("$hours ч", style = MaterialTheme.typography.titleLarge)
+            } else {
+                Text("$hours ч $minutes мин", style = MaterialTheme.typography.titleLarge)
             }
         }
         Spacer(Modifier.weight(1f))
@@ -83,11 +87,5 @@ fun BookCard(model: BookResponseDTO, onClick: (String) -> Unit = {}) {
                 elevation = FloatingActionButtonDefaults.elevation(0.dp))
         }
         Spacer(Modifier.width(16.dp))
-        if (minutes == 0L) {
-            Text("$hours ч", style = MaterialTheme.typography.titleLarge)
-        } else {
-            Text("$hours ч $minutes мин", style = MaterialTheme.typography.titleLarge)
-        }
-
     }
 }
