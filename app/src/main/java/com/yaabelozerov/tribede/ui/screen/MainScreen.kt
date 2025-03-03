@@ -238,7 +238,7 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel) {
                                     else -> Icons.Default.AccessAlarm
                                 }, contentDescription = null, modifier = Modifier.size(24.dp))
                             }
-                            Text(book.zoneName, style = MaterialTheme.typography.titleLarge)
+                            Text(book.zoneName + (book.officeSeatNumber?.let { " Место $it" } ?: ""), style = MaterialTheme.typography.titleLarge)
                             if (book.status == BookStatus.PENDING.ordinal) Text(date.run {
                                 "${dayOfMonth.toString().padStart(2, '0')}.${monthValue.toString().padStart(2, '0')} в $hour:${
                                     minute.toString().padStart(2, '0')
