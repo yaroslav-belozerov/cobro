@@ -40,17 +40,6 @@ class UserViewModel(
         fetchUserInfo()
     }
 
-    private val mediaChoose = MutableStateFlow<(() -> Unit)?>(null)
-    fun setMediaChoose(f: () -> Unit) {
-        mediaChoose.update { f }
-    }
-
-
-
-    fun onPickMedia() {
-        mediaChoose.value?.invoke()
-    }
-
     fun onMediaPicker(app: Context, uri: Uri) {
         viewModelScope.launch {
             dataStore.getToken().first().let { token ->
