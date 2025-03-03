@@ -63,6 +63,7 @@ import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.BookResponseDTO
 import com.yaabelozerov.tribede.domain.model.BookStatus
 import com.yaabelozerov.tribede.ui.components.BookCard
+import com.yaabelozerov.tribede.ui.components.ClickableBookCard
 import com.yaabelozerov.tribede.ui.components.MyButton
 import com.yaabelozerov.tribede.ui.components.MyTextField
 import com.yaabelozerov.tribede.ui.components.QrShowWidget
@@ -187,10 +188,11 @@ fun UserScreen(vm: UserViewModel) {
                     val pending =
                         userInfo.books.filter { BookStatus.entries[it.status] == BookStatus.PENDING }
                     itemsIndexed(pending) { index, book ->
-                        BookCard(book, { vm.getQr(it); showQrDialog = true }, {
+                        ClickableBookCard(book, { vm.getQr(it); showQrDialog = true }, {
                             currentMovedBook = book
                             showMoveModal = true
-                        })
+                        },
+                            { vm.deleteBook(book.id)})
                         if (index != pending.size - 1) {
                             Spacer(Modifier.size(14.dp))
                             HorizontalDivider()
@@ -215,7 +217,7 @@ fun UserScreen(vm: UserViewModel) {
                         }
                     }
                     items(userInfo.books.filter { BookStatus.entries[it.status] != BookStatus.PENDING }) {
-                        BookCard(it, { vm.getQr(it) }, null)
+                        ClickableBookCard(it, { vm.getQr(it) }, null, null)
                         Spacer(Modifier.size(14.dp))
                         HorizontalDivider()
                         Spacer(Modifier.size(4.dp))

@@ -98,6 +98,14 @@ class UserViewModel(
         }
     }
 
+    fun deleteBook(bookId: String) {
+        viewModelScope.launch {
+            Application.dataStore.getToken().first().let { token ->
+                apiClient.deleteBook(token, bookId)
+            }
+        }
+    }
+
     fun getQr(bookId: String) {
         viewModelScope.launch {
             dataStore.getToken().first().let { token ->
