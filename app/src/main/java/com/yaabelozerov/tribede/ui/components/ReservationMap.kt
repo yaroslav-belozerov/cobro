@@ -47,18 +47,20 @@ fun ZoneDto.toSpace(seats: List<SeatDto>): CoworkingSpace {
         currentPeople = 0,
         maxPeople = capacity,
         type = spaceType,
-        color = when (spaceType) {
-            SpaceType.OFFICE -> Color(0xFFCCDBDC)
-            SpaceType.TALKROOM -> Color(0xff1e6585)
-            SpaceType.OPEN -> Color(0xFF80CED7)
-            SpaceType.MISC -> Color(0xFF5F6062).copy(0.1f)
-        },
+        color = spaceType.color(),
         position = Pos(xCoordinate, yCoordinate, width, height),
         tags = zoneTags.map { it.tag.toString() },
         isCompanyRestricted = cls != null,
         description = description,
         seats = seats
     )
+}
+
+fun SpaceType.color() = when (this) {
+    SpaceType.OFFICE -> Color(0xFFCCDBDC)
+    SpaceType.TALKROOM -> Color(0xff3a94bd)
+    SpaceType.OPEN -> Color(0xFF80CED7)
+    SpaceType.MISC -> Color(0xffe0e0e0)
 }
 
 data class CoworkingSpace(
@@ -90,6 +92,7 @@ data class Pos(val x: Float, val y: Float, val width: Float, val height: Float)
 @Composable
 fun ReservationMap(
     chosen: CoworkingSpace?,
+    currentChosenType: SpaceType?,
     onClick: (CoworkingSpace) -> Unit,
     list: List<CoworkingSpace>,
     decor: List<Decoration>,
@@ -102,7 +105,7 @@ fun ReservationMap(
 
     Canvas(Modifier
         .fillMaxWidth()
-        .aspectRatio(1.3f)
+        .aspectRatio(1.4f)
         .padding(horizontal = 12.dp)
         .onPlaced {
             width = it.size.width
@@ -122,31 +125,45 @@ fun ReservationMap(
                 }
             })
         }) {
-        list.forEach {
-            val color = it.color
+        list.forEach { zone ->
+            val color = zone.color
             drawRoundRect(
-                color, cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()), topLeft = Offset(
-                    (it.position.x + 0.005f) * width, (it.position.y + 0.005f) * height
+                color.copy(currentChosenType?.let { if (it == zone.type) 1f else 0.5f } ?: 1f), cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()), topLeft = Offset(
+                    (zone.position.x + 0.005f) * width, (zone.position.y + 0.005f) * height
                 ), size = Size(
-                    width = (it.position.width - 0.01f) * width,
-                    height = (it.position.height - 0.01f) * height
+                    width = (zone.position.width - 0.01f) * width,
+                    height = (zone.position.height - 0.01f) * height
                 )
             )
-            if (it == chosen) {
+            if (zone == chosen) {
                 drawRoundRect(
                     bgColor,
                     style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round),
                     cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
                     topLeft = Offset(
-                        (it.position.x + 0.01f) * width, (it.position.y + 0.01f) * height
+                        (zone.position.x + 0.01f) * width, (zone.position.y + 0.01f) * height
                     ),
                     size = Size(
-                        width = (it.position.width - 0.02f) * width,
-                        height = (it.position.height - 0.02f) * height
+                        width = (zone.position.width - 0.02f) * width,
+                        height = (zone.position.height - 0.02f) * height
                     )
                 )
             }
-            it.seats.forEach { seat ->
+            if (currentChosenType == zone.type) {
+                drawRoundRect(
+                    Color(0xff2f3c99),
+                    style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round),
+                    cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
+                    topLeft = Offset(
+                        (zone.position.x + 0.01f) * width, (zone.position.y + 0.01f) * height
+                    ),
+                    size = Size(
+                        width = (zone.position.width - 0.02f) * width,
+                        height = (zone.position.height - 0.02f) * height
+                    )
+                )
+            }
+            zone.seats.forEach { seat ->
                 drawCircle(
                     color = Color(0xFFD1603D),
                     center = Offset(seat.x * width, seat.y * height),
@@ -164,7 +181,7 @@ fun ReservationMap(
                             with(toiletPainter) {
                                 draw(
                                     size = Size(24.dp.toPx(), 24.dp.toPx()),
-                                    colorFilter = ColorFilter.tint(bgColor)
+                                    colorFilter = ColorFilter.tint(bgColor.copy(if (currentChosenType != null) 0.5f else 1f))
                                 )
                             }
                         }
@@ -172,7 +189,7 @@ fun ReservationMap(
                             with(entrancePainter) {
                                 draw(
                                     size = Size(48.dp.toPx(), 48.dp.toPx()),
-                                    colorFilter = ColorFilter.tint(Color(0xFF0ea600))
+                                    colorFilter = ColorFilter.tint(Color(0xFF0ea600).copy(if (currentChosenType != null) 0.5f else 1f))
                                 )
                             }
                         }
@@ -361,7 +378,7 @@ fun ReservationMapPreview() {
     )
     var id by remember { mutableStateOf<CoworkingSpace?>(null) }
     ReservationMap(
-        id, { id = it }, lst, listOf(
+        id, null, { id = it }, lst, listOf(
             Decoration(
                 type = "Icon",
                 name = "toilet",

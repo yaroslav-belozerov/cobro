@@ -15,6 +15,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,11 +30,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerDefaults
@@ -41,6 +45,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalBottomSheetDefaults
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
@@ -83,6 +88,7 @@ import com.yaabelozerov.tribede.ui.components.MyTextField
 import com.yaabelozerov.tribede.ui.components.ReservationMap
 import com.yaabelozerov.tribede.ui.components.SpaceType
 import com.yaabelozerov.tribede.ui.components.Timeline
+import com.yaabelozerov.tribede.ui.components.color
 import com.yaabelozerov.tribede.ui.viewmodels.MainViewModel
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
 import kotlinx.coroutines.launch
@@ -93,7 +99,7 @@ import java.time.ZoneId
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewModel()) {
     val state by vm.state.collectAsState()
@@ -113,9 +119,10 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
         ) {
             Spacer(Modifier.size(24.dp))
             Text("Забронировать", style = MaterialTheme.typography.headlineMedium)
+            var currentChosenType by remember { mutableStateOf<SpaceType?>(null) }
             Column(Modifier.fillMaxWidth()) {
                 ReservationMap(
-                    chosenZone, {
+                    chosenZone, currentChosenType, {
                         if (chosenZone == it) {
                             chosenZone = null
                         } else {
@@ -126,6 +133,42 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                         }
                     }, zones, state.decor
                 )
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    SpaceType.entries.forEach {
+                        val type = when (it) {
+                            SpaceType.OFFICE -> "Бронь по местам"
+                            SpaceType.TALKROOM -> "Переговорка"
+                            SpaceType.OPEN -> "Open Space"
+                            SpaceType.MISC -> "Служебное"
+                        }
+                        OutlinedCard(
+                            shape = MaterialTheme.shapes.small,
+                            onClick = {
+                                currentChosenType = if (currentChosenType == it) null else it
+                            },
+                            colors = CardDefaults.outlinedCardColors(containerColor = if (currentChosenType == it) MaterialTheme.colorScheme.surfaceDim else MaterialTheme.colorScheme.surface)
+                        ) {
+                            Row(
+                                Modifier.padding(8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Box(
+                                    Modifier
+                                        .clip(CircleShape)
+                                        .size(24.dp)
+                                        .background(it.color())
+                                )
+                                Text(type)
+                            }
+                        }
+                    }
+                }
                 if (chosenZone != null) {
                     BookingModalBottomSheet(vm,
                         datePickerState,
@@ -267,7 +310,11 @@ fun BookingModalBottomSheet(
                         }
                     }
 
-                    AnimatedVisibility(chosenSeat == null && zone.type == SpaceType.OFFICE, enter = expandVertically(), exit = shrinkVertically()) {
+                    AnimatedVisibility(
+                        chosenSeat == null && zone.type == SpaceType.OFFICE,
+                        enter = expandVertically(),
+                        exit = shrinkVertically()
+                    ) {
                         Text(
                             "Выберите место", style = MaterialTheme.typography.bodyMedium
                         )
@@ -277,13 +324,19 @@ fun BookingModalBottomSheet(
                     Text(zone.run { "Свободно ${maxPeople - 0} из $maxPeople" })
                 }
             }
-            AnimatedVisibility(chosenSeat != null || chosenZone?.type != SpaceType.OFFICE, enter = expandVertically(), exit = shrinkVertically()) {
+            AnimatedVisibility(
+                chosenSeat != null || chosenZone?.type != SpaceType.OFFICE,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
                 Column {
                     MyButton(
                         onClick = onOpenBooking,
                         text = "Забронировать",
                         icon = Icons.Default.EditCalendar,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
                     )
                     if (chosenZone?.type != SpaceType.OPEN) Box(
                         Modifier.padding(
