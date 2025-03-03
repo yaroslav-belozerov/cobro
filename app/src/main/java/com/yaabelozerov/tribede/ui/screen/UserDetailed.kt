@@ -24,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
+import com.yaabelozerov.tribede.data.model.UserRole
 import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
 
 @Composable
@@ -65,13 +66,14 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
                 }
             }
             item {
-                Text("Роль: ${user.role}")
+                Text("Роль: ${UserRole.entries[user.role]}")
             }
 
         }
         passport?.let {
             item {
-                Text("Паспорт", style = MaterialTheme.typography.headlineMedium) // TODO Нарисовать юай для паспорта
+                Text("Паспорт", style = MaterialTheme.typography.headlineMedium)
+                Row {  }
             }
             item {
                 HorizontalDivider()

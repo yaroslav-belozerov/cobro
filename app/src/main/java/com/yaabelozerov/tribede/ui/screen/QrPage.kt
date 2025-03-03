@@ -47,7 +47,6 @@ fun QrPage(
     var text by remember { mutableStateOf(invalidStr) }
 
     var showPassportWidget by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
     var userId by remember { mutableStateOf("") }
     var finalCode by remember { mutableStateOf("") }
 
