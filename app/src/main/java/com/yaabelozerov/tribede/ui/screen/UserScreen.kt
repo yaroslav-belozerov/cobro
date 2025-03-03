@@ -135,7 +135,7 @@ fun UserScreen(vm: UserViewModel) {
                     }
                     val pending = userInfo.books.filter { BookStatus.entries[it.status] == BookStatus.PENDING }
                     itemsIndexed(pending) { index, book ->
-                        BookCard(book, { vm.getQr(it); showQrDialog = true })
+                        BookCard(book, { vm.getQr(it); showQrDialog = true }, {})
                         if (index != pending.size - 1) {
                             Spacer(Modifier.size(14.dp))
                             HorizontalDivider()
@@ -160,7 +160,7 @@ fun UserScreen(vm: UserViewModel) {
                         }
                     }
                     items(userInfo.books.filter { BookStatus.entries[it.status] != BookStatus.PENDING }) {
-                        BookCard(it,  { vm.getQr(it) })
+                        BookCard(it,  { vm.getQr(it) }, {})
                         Spacer(Modifier.size(14.dp))
                         HorizontalDivider()
                         Spacer(Modifier.size(4.dp))

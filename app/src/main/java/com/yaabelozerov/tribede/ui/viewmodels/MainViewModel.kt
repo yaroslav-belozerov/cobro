@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.ApiClient
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
+import com.yaabelozerov.tribede.data.model.RescheduleBody
 import com.yaabelozerov.tribede.data.model.toDomainModel
 import com.yaabelozerov.tribede.domain.model.BookingUI
 import com.yaabelozerov.tribede.ui.App
@@ -35,6 +36,12 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
         fetchZones()
         fetchDecor()
         viewModelScope.launch {
+        }
+    }
+
+    fun rescheduleBook(token: String, from: LocalDateTime, to: LocalDateTime, id: String) {
+        viewModelScope.launch {
+            api.rescheduleBook(token, RescheduleBody(from.toString(), to.toString()), id)
         }
     }
 

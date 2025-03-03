@@ -8,6 +8,7 @@ import com.yaabelozerov.tribede.data.model.LoginDto
 import com.yaabelozerov.tribede.data.model.QrConfirmResponse
 import com.yaabelozerov.tribede.data.model.QrDto
 import com.yaabelozerov.tribede.data.model.RegisterDto
+import com.yaabelozerov.tribede.data.model.RescheduleBody
 import com.yaabelozerov.tribede.data.model.SeatDto
 import com.yaabelozerov.tribede.data.model.TokenDto
 import com.yaabelozerov.tribede.data.model.UserDto
@@ -86,6 +87,19 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
                 parameter("seat-id", it)
             }
         }.body()
+    }
+
+    suspend fun rescheduleBook(token: String, body: RescheduleBody, id: String) {
+        try {
+            httpClient.patch {
+                url("/book/$id/reschedule")
+                header("Authorization", "Bearer $token")
+                setBody(body)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
     }
 
     suspend fun getQrCode(token: String, bookId: String): Result<QrDto> = runCatching {

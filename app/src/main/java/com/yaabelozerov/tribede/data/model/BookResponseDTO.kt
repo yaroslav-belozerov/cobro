@@ -39,3 +39,9 @@ data class BookRequestDTO(
     val description: String
 )
 
+@Serializable
+data class RescheduleBody(
+    val from: String,
+    val to: String,
+)
+
