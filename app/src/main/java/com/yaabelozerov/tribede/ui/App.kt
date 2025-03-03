@@ -48,6 +48,5 @@ fun App(modifier: Modifier = Modifier, navCtrl: NavHostController, hasCameraPerm
         composable(Nav.SCAN.route) {
             QrPage(hasCameraPermission, goBack = {navCtrl.navigateUp()})
         }
-
     }
 }

@@ -18,7 +18,8 @@ data class AdminState(
     val zones: List<String> = emptyList(),
     val bookings: List<AdminBookingUI> = emptyList(),
 
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val currentZones: List<String> = emptyList()
 
 )
 
@@ -28,6 +29,14 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
 
     init {
         fetchData()
+    }
+
+    fun addFilterZone(zone: String) {
+        _state.update { it.copy(currentZones = it.currentZones + zone) }
+    }
+
+    fun deleteFilterZone(zone: String) {
+        _state.update { it.copy(currentZones = it.currentZones - zone) }
     }
 
     fun deleteBooking(id: String) {
@@ -59,6 +68,12 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
                     }
                 }
                 result.exceptionOrNull()?.printStackTrace()
+                val zones = api.getZones(token)
+                zones.getOrNull()?.let {
+                    _state.update { state ->
+                        state.copy(zones = it.map { it.name }.sorted())
+                    }
+                }
             }
             _state.update { it.copy(isLoading = false) }
         }

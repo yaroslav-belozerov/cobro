@@ -12,7 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
@@ -21,6 +24,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -37,8 +41,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
 import com.yaabelozerov.tribede.domain.model.AdminBookingUI
 import com.yaabelozerov.tribede.domain.model.BookStatus
 import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
@@ -60,25 +66,51 @@ fun MainAdminScreen(vm: AdminViewModel = viewModel(), navigateToScan: () -> Unit
                 item {
                     Spacer(Modifier.height(16.dp))
                     Text("Все бронирования", style = MaterialTheme.typography.headlineMedium)
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(8.dp))
+                    HorizontalDivider()
                 }
-                itemsIndexed(state.bookings) { index, model ->
+                item {
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        items(state.zones) {
+                            FilterChip(
+                                selected = state.currentZones.contains(it),
+                                onClick = {
+                                    if (state.currentZones.contains(it)) {
+                                        vm.deleteFilterZone(it)
+                                    } else {
+                                        vm.addFilterZone(it)
+                                    }
+                                },
+                                label = { Text(it) },
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    HorizontalDivider()
+                }
+                val filteredBookings = state.bookings.filter { booking ->
+                    state.currentZones.isEmpty() || state.currentZones.contains(booking.zoneName)
+                }
+                itemsIndexed(filteredBookings) { index, model ->
                     AdminBookCard(model, onDelete = vm::deleteBooking)
-                    if (index != state.bookings.size - 1) {
+                    if (index != filteredBookings.size - 1) {
                         Spacer(Modifier.size(12.dp))
                         HorizontalDivider()
                         Spacer(Modifier.size(4.dp))
                     }
                 }
+                item {
+                    Spacer(Modifier.height(64.dp))
+                }
 
             }
 
-            LargeFloatingActionButton(
+            FloatingActionButton(
                 onClick = navigateToScan,
                 shape = RoundedCornerShape(6.dp),
                 modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 24.dp, end = 24.dp),
             ) {
-                Icon(Icons.Filled.QrCode, contentDescription = null, modifier = Modifier.size(36.dp))
+                Icon(Icons.Filled.QrCode, contentDescription = null, modifier = Modifier.padding(16.dp).size(36.dp))
             }
         }
     }
@@ -127,6 +159,14 @@ fun AdminBookCard(
                         Icon(Icons.Filled.PlayArrow, contentDescription = null)
                         Text("В процессе")
                     }
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(24.dp)) {
+                        AsyncImage(model.userPhotoUrl, contentDescription = null,
+                            modifier = Modifier.fillMaxSize().clip(CircleShape))
+
+                    }
+                    Text(model.username, style = MaterialTheme.typography.bodySmall)
                 }
             }
             Spacer(Modifier.width(16.dp))
