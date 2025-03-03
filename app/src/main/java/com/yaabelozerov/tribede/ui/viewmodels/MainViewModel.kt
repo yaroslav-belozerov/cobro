@@ -47,12 +47,11 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
                     id = zoneId,
                     seatId = seatId,
                     to = to.toString()
-                ).isSuccess) {
+                ).also { it.exceptionOrNull()?.printStackTrace() }.isSuccess) {
                     callback(true)
                 } else {
                     callback(false)
                 }
-
             }
         }
     }

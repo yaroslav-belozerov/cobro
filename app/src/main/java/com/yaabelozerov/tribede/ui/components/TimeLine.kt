@@ -33,7 +33,7 @@ import com.yaabelozerov.tribede.domain.model.BookingUI
 fun Timeline(
     bookings: List<BookingUI>,
     startHour: Int = 10, // Начало рабочего дня (9:00)
-    endHour: Int = 21, // Конец рабочего дня (21:00)
+    endHour: Int = 22, // Конец рабочего дня (22:00)
 ) {
     val totalMinutes = (endHour - startHour) * 60
     val minuteWidth =
