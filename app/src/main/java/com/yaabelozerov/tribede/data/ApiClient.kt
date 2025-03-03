@@ -182,8 +182,8 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
 
     suspend fun deleteBook(token: String, id: String) {
         try {
-            httpClient.delete {
-                url("/book/$id")
+            httpClient.patch {
+                url("/book/$id/cancel")
                 header("Authorization", "Bearer $token")
             }
         } catch (e: Exception) {

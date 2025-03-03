@@ -62,7 +62,7 @@ import java.time.temporal.ChronoUnit
 fun MainAdminScreen(vm: AdminViewModel = viewModel(), navigateToScan: () -> Unit) {
     val state = vm.state.collectAsState().value
     var isRefreshing by remember { mutableStateOf(false) }
-    PullToRefreshBox(state.isLoading, onRefresh = vm::fetchData) {
+    PullToRefreshBox(state.isLoading, onRefresh = {vm.fetchData()}) {
         Box(Modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier
