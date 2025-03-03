@@ -1,26 +1,14 @@
 package com.yaabelozerov.tribede.ui.components
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.Wc
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,16 +17,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onPlaced
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yaabelozerov.tribede.data.model.SeatDto
@@ -88,10 +77,12 @@ data class CoworkingSpace(
 
 @Serializable
 data class Decoration(
-    val id: String,
+    val name: String? = null,
     val type: String,
-    val x: Long,
-    val y: Long,
+    val x: Float,
+    val y: Float,
+    val width: Float? = null,
+    val height: Float? = null,
 )
 
 data class Pos(val x: Float, val y: Float, val width: Float, val height: Float)
@@ -101,11 +92,13 @@ fun ReservationMap(
     chosen: CoworkingSpace?,
     onClick: (CoworkingSpace) -> Unit,
     list: List<CoworkingSpace>,
-    decor: List<Decoration>
+    decor: List<Decoration>,
 ) {
     val bgColor = MaterialTheme.colorScheme.onBackground
     var width by remember { mutableIntStateOf(0) }
     var height by remember { mutableIntStateOf(0) }
+    val toiletPainter = rememberVectorPainter(Icons.Default.Wc)
+    val entrancePainter = rememberVectorPainter(Icons.AutoMirrored.Default.ArrowLeft)
 
     Canvas(Modifier
         .fillMaxWidth()
@@ -159,6 +152,48 @@ fun ReservationMap(
                     center = Offset(seat.x * width, seat.y * height),
                     radius = 6.dp.toPx()
                 )
+            }
+        }
+
+        decor.forEach {
+            when (it.type) {
+                "Icon" ->
+                translate(left = it.x * width, top = it.y * height) {
+                    when (it.name) {
+                        "toilet" -> {
+                            with(toiletPainter) {
+                                draw(
+                                    size = Size(24.dp.toPx(), 24.dp.toPx()),
+                                    colorFilter = ColorFilter.tint(bgColor)
+                                )
+                            }
+                        }
+                        "entrance_left" -> {
+                            with(entrancePainter) {
+                                draw(
+                                    size = Size(48.dp.toPx(), 48.dp.toPx()),
+                                    colorFilter = ColorFilter.tint(Color(0xFF0ea600))
+                                )
+                            }
+                        }
+                    }
+                }
+
+                "Rectangle" -> it.width?.let { w ->
+                    it.height?.let { h ->
+                        drawRoundRect(
+                            color = when (it.name) {
+                                "door" -> Color(0xff8a4a0a)
+                                else -> Color.Red
+                            },
+                            size = Size(w * width, h * height),
+                            topLeft = Offset(it.x * width, it.y * height),
+                            cornerRadius = CornerRadius(2.dp.toPx(), 2.dp.toPx())
+                        )
+                    }
+                }
+
+                else -> Unit
             }
         }
     }
@@ -326,6 +361,76 @@ fun ReservationMapPreview() {
     )
     var id by remember { mutableStateOf<CoworkingSpace?>(null) }
     ReservationMap(
-        id, { id = it }, lst, emptyList()
+        id, { id = it }, lst, listOf(
+            Decoration(
+                type = "Icon",
+                name = "toilet",
+                x = 0.27f,
+                y = 0.348f,
+                width = null,
+                height = null
+            ), Decoration(
+                type = "Rectangle",
+                name = "door",
+                x = 0.125f,
+                y = 0.425f,
+                width = 0.07f,
+                height = 0.015f
+            ), Decoration(
+                type = "Rectangle",
+                name = "door",
+                x = 0.35f,
+                y = 0.425f,
+                width = 0.05f,
+                height = 0.015f
+            ), Decoration(
+                type = "Rectangle",
+                name = "door",
+                x = 0.775f,
+                y = 0.28f,
+                width = 0.05f,
+                height = 0.015f
+            ), Decoration(
+                type = "Rectangle",
+                name = "door",
+                x = 0.575f,
+                y = 0.28f,
+                width = 0.05f,
+                height = 0.015f
+            ), Decoration(
+                type = "Rectangle",
+                name = "door",
+                x = 0.2f,
+                y = 0.5f,
+                width = 0.07f,
+                height = 0.015f
+            ), Decoration(
+                type = "Rectangle",
+                name = "door",
+                x = 0.2f,
+                y = 0.5f,
+                width = 0.07f,
+                height = 0.015f
+            ), Decoration(
+                type = "Rectangle",
+                name = "door",
+                x = 0.588f,
+                y = 0.5f,
+                width = 0.07f,
+                height = 0.015f
+            ), Decoration(
+                type = "Rectangle",
+                name = "door",
+                x = 0.75f,
+                y = 0.5f,
+                width = 0.07f,
+                height = 0.015f
+            ), Decoration(
+                type = "Icon",
+                name = "entrance_left",
+                x = 0.94f,
+                y = 0.4f
+            )
+        )
     )
 }

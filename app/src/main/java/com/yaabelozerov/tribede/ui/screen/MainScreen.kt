@@ -36,10 +36,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalBottomSheetDefaults
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -99,18 +101,9 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = Instant.now().toEpochMilli()
     )
-    val bookingsForToday = remember(state.currentBookings, datePickerState.selectedDateMillis) {
-        state.currentBookings.filter {
-            it.start.toLocalDate() == LocalDateTime.ofInstant(datePickerState.selectedDateMillis?.let {
-                Instant.ofEpochMilli(it)
-            } ?: Instant.now(), ZoneId.systemDefault()).toLocalDate()
-        }
-    }
     var chosenZone by remember { mutableStateOf<CoworkingSpace?>(null) }
     var chosenSeat by remember { mutableStateOf<SeatDto?>(null) }
-    val seatPainter = rememberVectorPainter(ImageVector.vectorResource(R.drawable.seat))
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scope = rememberCoroutineScope()
     state.zones.takeIf { it.isNotEmpty() }?.let { zones ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -131,134 +124,17 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                                 zoneId = it.id, seatId = null
                             )
                         }
-                    }, zones, emptyList()
+                    }, zones, state.decor
                 )
-                if (chosenZone != null) ModalBottomSheet(
-                    sheetState = sheetState, onDismissRequest = {
-                        chosenZone = null
-                        chosenSeat = null
-                        vm.resetModal()
-                        datePickerState.selectedDateMillis = Instant.now().toEpochMilli()
-                    }, containerColor = MaterialTheme.colorScheme.surfaceContainer
-                ) {
-                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                        Column(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            val radius = 24
-                            chosenZone?.let { zone ->
-                                var width by remember { mutableIntStateOf(0) }
-                                var height by remember { mutableIntStateOf(0) }
-                                Row(
-                                    Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    if (zone.type == SpaceType.OFFICE) Canvas(Modifier
-                                        .padding(12.dp)
-                                        .fillMaxWidth(0.7f)
-                                        .aspectRatio(zone.position.width / zone.position.height)
-                                        .clip(MaterialTheme.shapes.large)
-                                        .background(zone.color)
-                                        .onPlaced { layout ->
-                                            width = layout.size.width
-                                            height = layout.size.height
-                                        }
-                                        .pointerInput(Unit) {
-                                            detectTapGestures(onTap = { offset ->
-                                                val x = offset.x
-                                                val y = offset.y
-                                                zone.seats.forEach {
-                                                    val pointX =
-                                                        (it.x - zone.position.x) * width / zone.position.width
-                                                    val pointY =
-                                                        (it.y - zone.position.y) * height / zone.position.height
-                                                    val distance = sqrt(
-                                                        ((x - pointX).pow(2) + (y - pointY).pow(
-                                                            2
-                                                        ))
-                                                    )
-                                                    if (distance < radius.dp.toPx()) {
-                                                        if (it.id == chosenSeat?.id) {
-                                                            chosenSeat = null
-                                                        } else {
-                                                            chosenSeat = it
-                                                            vm.getBookings(
-                                                                zoneId = zone.id, seatId = it.id
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            })
-                                        }) {
-                                        zone.seats.forEach { seat ->
-                                            drawCircle(
-                                                color = if (seat.id != chosenSeat?.id) Color(
-                                                    0xFFD1603D
-                                                ) else Color.Black,
-                                                center = Offset(
-                                                    (seat.x - zone.position.x) * width / zone.position.width,
-                                                    (seat.y - zone.position.y) * height / zone.position.height
-                                                ),
-                                                radius = radius.dp.toPx(),
-                                                style = Stroke(2.dp.toPx(), cap = StrokeCap.Round)
-                                            )
-                                            val iconSize = radius.dp.toPx()
-                                            with(seatPainter) {
-                                                translate(
-                                                    left = (seat.x - zone.position.x) * width / zone.position.width - iconSize / 2,
-                                                    top = (seat.y - zone.position.y) * height / zone.position.height - iconSize / 2
-                                                ) {
-                                                    draw(
-                                                        Size(iconSize, iconSize),
-                                                        colorFilter = ColorFilter.tint(
-                                                            if (seat.id != chosenSeat?.id) Color(
-                                                                0xFFD1603D
-                                                            ) else Color.Black
-                                                        )
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                AnimatedVisibility(chosenSeat == null && zone.type == SpaceType.OFFICE) {
-                                    Text(
-                                        "Выберите место",
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                }
-                                Text(zone.name, style = MaterialTheme.typography.headlineLarge)
-                                Text(zone.description)
-                                Text(zone.run { "Свободно ${maxPeople - 0} из $maxPeople" })
-                                AnimatedVisibility(zone.type != SpaceType.OFFICE || chosenSeat != null) {
-                                    MyButton(
-                                        onClick = { isBookingDialogOpen = true },
-                                        text = "Забронировать",
-                                        icon = Icons.Default.EditCalendar,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
-                            }
-                        }
-                        AnimatedVisibility(chosenSeat != null || chosenZone?.type != SpaceType.OFFICE) {
-                            Column {
-                                if (chosenZone?.type != SpaceType.OPEN) Box(
-                                    Modifier.padding(
-                                        horizontal = 12.dp, vertical = 12.dp
-                                    )
-                                ) {
-                                    Timeline(bookingsForToday)
-                                } else Spacer(Modifier.height(12.dp))
-                                DatePicker(
-                                    datePickerState, colors = DatePickerDefaults.colors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainer
-                                    ), title = null
-                                )
-                            }
-                        }
-                    }
+                if (chosenZone != null) {
+                    BookingModalBottomSheet(vm,
+                        datePickerState,
+                        sheetState,
+                        { isBookingDialogOpen = true },
+                        chosenZone,
+                        { chosenZone = it },
+                        chosenSeat,
+                        { chosenSeat = if (chosenSeat == it) null else it })
                 }
             }
         }
@@ -277,6 +153,152 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
                         }
                     }
                 })
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BookingModalBottomSheet(
+    vm: MainViewModel,
+    datePickerState: DatePickerState,
+    sheetState: SheetState,
+    onOpenBooking: () -> Unit,
+    chosenZone: CoworkingSpace?,
+    setChosenZone: (CoworkingSpace?) -> Unit,
+    chosenSeat: SeatDto?,
+    setChosenSeat: (SeatDto?) -> Unit,
+) {
+    val state by vm.state.collectAsState()
+    val seatPainter = rememberVectorPainter(ImageVector.vectorResource(R.drawable.seat))
+    val bookingsForToday = remember(state.currentBookings, datePickerState.selectedDateMillis) {
+        state.currentBookings.filter {
+            it.start.toLocalDate() == LocalDateTime.ofInstant(datePickerState.selectedDateMillis?.let {
+                Instant.ofEpochMilli(it)
+            } ?: Instant.now(), ZoneId.systemDefault()).toLocalDate()
+        }
+    }
+    ModalBottomSheet(
+        sheetState = sheetState, onDismissRequest = {
+            setChosenZone(null)
+            setChosenSeat(null)
+            vm.resetModal()
+            datePickerState.selectedDateMillis = Instant.now().toEpochMilli()
+        }, containerColor = MaterialTheme.colorScheme.surfaceContainer
+    ) {
+        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val radius = 24
+                chosenZone?.let { zone ->
+                    var width by remember { mutableIntStateOf(0) }
+                    var height by remember { mutableIntStateOf(0) }
+                    Row(
+                        Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
+                    ) {
+                        if (zone.type == SpaceType.OFFICE) Canvas(Modifier
+                            .padding(12.dp)
+                            .fillMaxWidth(0.7f)
+                            .aspectRatio(zone.position.width / zone.position.height)
+                            .clip(MaterialTheme.shapes.large)
+                            .background(zone.color)
+                            .onPlaced { layout ->
+                                width = layout.size.width
+                                height = layout.size.height
+                            }
+                            .pointerInput(Unit) {
+                                detectTapGestures(onTap = { offset ->
+                                    val x = offset.x
+                                    val y = offset.y
+                                    zone.seats.forEach {
+                                        val pointX =
+                                            (it.x - zone.position.x) * width / zone.position.width
+                                        val pointY =
+                                            (it.y - zone.position.y) * height / zone.position.height
+                                        val distance = sqrt(
+                                            ((x - pointX).pow(2) + (y - pointY).pow(
+                                                2
+                                            ))
+                                        )
+                                        if (distance < radius.dp.toPx()) {
+                                            if (it.id == chosenSeat?.id) {
+                                                setChosenSeat(null)
+                                            } else {
+                                                setChosenSeat(it)
+                                                vm.getBookings(
+                                                    zoneId = zone.id, seatId = it.id
+                                                )
+                                            }
+                                        }
+                                    }
+                                })
+                            }) {
+                            zone.seats.forEach { seat ->
+                                drawCircle(
+                                    color = if (seat.id != chosenSeat?.id) Color(
+                                        0xFFD1603D
+                                    ) else Color.Black,
+                                    center = Offset(
+                                        (seat.x - zone.position.x) * width / zone.position.width,
+                                        (seat.y - zone.position.y) * height / zone.position.height
+                                    ),
+                                    radius = radius.dp.toPx(),
+                                    style = Stroke(2.dp.toPx(), cap = StrokeCap.Round)
+                                )
+                                val iconSize = radius.dp.toPx()
+                                with(seatPainter) {
+                                    translate(
+                                        left = (seat.x - zone.position.x) * width / zone.position.width - iconSize / 2,
+                                        top = (seat.y - zone.position.y) * height / zone.position.height - iconSize / 2
+                                    ) {
+                                        draw(
+                                            Size(iconSize, iconSize),
+                                            colorFilter = ColorFilter.tint(
+                                                if (seat.id != chosenSeat?.id) Color(
+                                                    0xFFD1603D
+                                                ) else Color.Black
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    AnimatedVisibility(chosenSeat == null && zone.type == SpaceType.OFFICE, enter = expandVertically(), exit = shrinkVertically()) {
+                        Text(
+                            "Выберите место", style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    Text(zone.name, style = MaterialTheme.typography.headlineLarge)
+                    Text(zone.description)
+                    Text(zone.run { "Свободно ${maxPeople - 0} из $maxPeople" })
+                }
+            }
+            AnimatedVisibility(chosenSeat != null || chosenZone?.type != SpaceType.OFFICE, enter = expandVertically(), exit = shrinkVertically()) {
+                Column {
+                    MyButton(
+                        onClick = onOpenBooking,
+                        text = "Забронировать",
+                        icon = Icons.Default.EditCalendar,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                    )
+                    if (chosenZone?.type != SpaceType.OPEN) Box(
+                        Modifier.padding(
+                            horizontal = 12.dp, vertical = 12.dp
+                        )
+                    ) {
+                        Timeline(bookingsForToday)
+                    } else Spacer(Modifier.height(12.dp))
+                    DatePicker(
+                        datePickerState, colors = DatePickerDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        ), title = null
+                    )
+                }
+            }
         }
     }
 }

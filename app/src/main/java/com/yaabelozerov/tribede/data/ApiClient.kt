@@ -11,6 +11,7 @@ import com.yaabelozerov.tribede.data.model.SeatDto
 import com.yaabelozerov.tribede.data.model.TokenDto
 import com.yaabelozerov.tribede.data.model.UserDto
 import com.yaabelozerov.tribede.data.model.ZoneDto
+import com.yaabelozerov.tribede.ui.components.Decoration
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -149,6 +150,21 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
             url("book/$id/validate")
             parameter("from", from)
             parameter("to", to)
+            header("Authorization", "Bearer $token")
+        }.body()
+    }
+
+    suspend fun postDecor(token: String, body: Decoration): Result<String> = kotlin.runCatching {
+        httpClient.post {
+            url("decorations")
+            header("Authorization", "Bearer $token")
+            setBody(body)
+        }.body()
+    }
+
+    suspend fun getDecor(token: String): Result<List<Decoration>> = kotlin.runCatching {
+        httpClient.get {
+            url("decorations")
             header("Authorization", "Bearer $token")
         }.body()
     }

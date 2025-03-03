@@ -8,7 +8,9 @@ import com.yaabelozerov.tribede.data.ApiClient
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.toDomainModel
 import com.yaabelozerov.tribede.domain.model.BookingUI
+import com.yaabelozerov.tribede.ui.App
 import com.yaabelozerov.tribede.ui.components.CoworkingSpace
+import com.yaabelozerov.tribede.ui.components.Decoration
 import com.yaabelozerov.tribede.ui.components.toSpace
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,8 +21,8 @@ import kotlinx.coroutines.launch
 
 data class MainState(
     val zones: List<CoworkingSpace> = emptyList(),
-    val currentBookings: List<BookingUI> = emptyList()
-
+    val currentBookings: List<BookingUI> = emptyList(),
+    val decor: List<Decoration> = emptyList()
 )
 
 class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
@@ -29,6 +31,82 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
 
     init {
         fetchZones()
+        fetchDecor()
+        viewModelScope.launch {
+//            val lst = listOf(
+//                Decoration(
+//                    type = "Icon",
+//                    name = "toilet",
+//                    x = 0.27f,
+//                    y = 0.348f,
+//                    width = null,
+//                    height = null
+//                ), Decoration(
+//                    type = "Rectangle",
+//                    name = "door",
+//                    x = 0.125f,
+//                    y = 0.425f,
+//                    width = 0.07f,
+//                    height = 0.015f
+//                ), Decoration(
+//                    type = "Rectangle",
+//                    name = "door",
+//                    x = 0.35f,
+//                    y = 0.425f,
+//                    width = 0.05f,
+//                    height = 0.015f
+//                ), Decoration(
+//                    type = "Rectangle",
+//                    name = "door",
+//                    x = 0.775f,
+//                    y = 0.28f,
+//                    width = 0.05f,
+//                    height = 0.015f
+//                ), Decoration(
+//                    type = "Rectangle",
+//                    name = "door",
+//                    x = 0.575f,
+//                    y = 0.28f,
+//                    width = 0.05f,
+//                    height = 0.015f
+//                ), Decoration(
+//                    type = "Rectangle",
+//                    name = "door",
+//                    x = 0.2f,
+//                    y = 0.5f,
+//                    width = 0.07f,
+//                    height = 0.015f
+//                ), Decoration(
+//                    type = "Rectangle",
+//                    name = "door",
+//                    x = 0.2f,
+//                    y = 0.5f,
+//                    width = 0.07f,
+//                    height = 0.015f
+//                ), Decoration(
+//                    type = "Rectangle",
+//                    name = "door",
+//                    x = 0.588f,
+//                    y = 0.5f,
+//                    width = 0.07f,
+//                    height = 0.015f
+//                ), Decoration(
+//                    type = "Rectangle",
+//                    name = "door",
+//                    x = 0.75f,
+//                    y = 0.5f,
+//                    width = 0.07f,
+//                    height = 0.015f
+//                )
+//            )
+//            Application.dataStore.getToken().first().let { token ->
+//                api.postDecor(token, Decoration(
+//                    type = "Icon",
+//                    x = 1.0f,
+//                    y = 0.5f, name = "entrance_left"
+//                )).also { it.exceptionOrNull()?.printStackTrace() }
+//            }
+        }
     }
 
     private fun fetchZones() {
@@ -43,6 +121,19 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
                     _state.update { state ->
                         state.copy(zones = zones)
                     }
+                }
+                result.exceptionOrNull()?.printStackTrace()
+            }
+        }
+    }
+
+    private fun fetchDecor() {
+        viewModelScope.launch {
+            Application.dataStore.getToken().distinctUntilChanged().collect { token ->
+                val result = api.getDecor(token)
+                result.getOrNull()?.let { res ->
+                    _state.update { it.copy(decor = res) }
+                    println(res)
                 }
                 result.exceptionOrNull()?.printStackTrace()
             }
