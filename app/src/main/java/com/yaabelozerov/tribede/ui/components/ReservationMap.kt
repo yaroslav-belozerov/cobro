@@ -2,6 +2,7 @@ package com.yaabelozerov.tribede.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.Wc
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,7 +26,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onPlaced
@@ -32,6 +36,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yaabelozerov.tribede.data.model.SeatDto
 import com.yaabelozerov.tribede.data.model.ZoneDto
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 enum class SpaceType {
@@ -57,9 +63,9 @@ fun ZoneDto.toSpace(seats: List<SeatDto>): CoworkingSpace {
 }
 
 fun SpaceType.color() = when (this) {
-    SpaceType.OFFICE -> Color(0xFFCCDBDC)
-    SpaceType.TALKROOM -> Color(0xff3a94bd)
-    SpaceType.OPEN -> Color(0xFF80CED7)
+    SpaceType.OFFICE -> Color(0xFF93e6ca)
+    SpaceType.TALKROOM -> Color(0xff59b8e3)
+    SpaceType.OPEN -> Color(0xFF93e6e5)
     SpaceType.MISC -> Color(0xffe0e0e0)
 }
 
@@ -127,14 +133,13 @@ fun ReservationMap(
         }) {
         list.forEach { zone ->
             val color = zone.color
-            drawRoundRect(
-                color.copy(currentChosenType?.let { if (it == zone.type) 1f else 0.5f } ?: 1f), cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()), topLeft = Offset(
-                    (zone.position.x + 0.005f) * width, (zone.position.y + 0.005f) * height
-                ), size = Size(
-                    width = (zone.position.width - 0.01f) * width,
-                    height = (zone.position.height - 0.01f) * height
-                )
-            )
+            drawRoundRect(color.copy(currentChosenType?.let { if (it == zone.type) 1f else 0.5f }
+                ?: 1f), cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()), topLeft = Offset(
+                (zone.position.x + 0.005f) * width, (zone.position.y + 0.005f) * height
+            ), size = Size(
+                width = (zone.position.width - 0.01f) * width,
+                height = (zone.position.height - 0.01f) * height
+            ))
             if (zone == chosen) {
                 drawRoundRect(
                     bgColor,
@@ -165,52 +170,52 @@ fun ReservationMap(
             }
             zone.seats.forEach { seat ->
                 drawCircle(
-                    color = Color(0xFFD1603D),
+                    color = Color(0xFFD1603D).copy(if (currentChosenType?.let { it == SpaceType.OFFICE } != false) 1f else 0.5f),
                     center = Offset(seat.x * width, seat.y * height),
                     radius = 6.dp.toPx()
                 )
             }
-        }
 
-        decor.forEach {
-            when (it.type) {
-                "Icon" ->
-                translate(left = it.x * width, top = it.y * height) {
-                    when (it.name) {
-                        "toilet" -> {
-                            with(toiletPainter) {
-                                draw(
-                                    size = Size(24.dp.toPx(), 24.dp.toPx()),
-                                    colorFilter = ColorFilter.tint(bgColor.copy(if (currentChosenType != null) 0.5f else 1f))
-                                )
+            decor.forEach {
+                when (it.type) {
+                    "Icon" -> translate(left = it.x * width, top = it.y * height) {
+                        when (it.name) {
+                            "toilet" -> {
+                                with(toiletPainter) {
+                                    draw(
+                                        size = Size(24.dp.toPx(), 24.dp.toPx()),
+                                        colorFilter = ColorFilter.tint(bgColor.copy(if (currentChosenType != null) 0.5f else 1f))
+                                    )
+                                }
                             }
-                        }
-                        "entrance_left" -> {
-                            with(entrancePainter) {
-                                draw(
-                                    size = Size(48.dp.toPx(), 48.dp.toPx()),
-                                    colorFilter = ColorFilter.tint(Color(0xFF0ea600).copy(if (currentChosenType != null) 0.5f else 1f))
-                                )
+
+                            "entrance_left" -> {
+                                with(entrancePainter) {
+                                    draw(
+                                        size = Size(48.dp.toPx(), 48.dp.toPx()),
+                                        colorFilter = ColorFilter.tint(Color(0xFF0ea600).copy(if (currentChosenType != null) 0.5f else 1f))
+                                    )
+                                }
                             }
                         }
                     }
-                }
 
-                "Rectangle" -> it.width?.let { w ->
-                    it.height?.let { h ->
-                        drawRoundRect(
-                            color = when (it.name) {
-                                "door" -> Color(0xff8a4a0a)
-                                else -> Color.Red
-                            },
-                            size = Size(w * width, h * height),
-                            topLeft = Offset(it.x * width, it.y * height),
-                            cornerRadius = CornerRadius(2.dp.toPx(), 2.dp.toPx())
-                        )
+                    "Rectangle" -> it.width?.let { w ->
+                        it.height?.let { h ->
+                            drawRoundRect(
+                                color = when (it.name) {
+                                    "door" -> Color(0xFF0c0e17)
+                                    else -> Color.Red
+                                }.copy(if (currentChosenType != null) 0.05f else 1f),
+                                size = Size(w * width, h * height),
+                                topLeft = Offset(it.x * width, it.y * height),
+                                cornerRadius = CornerRadius(2.dp.toPx(), 2.dp.toPx())
+                            )
+                        }
                     }
-                }
 
-                else -> Unit
+                    else -> Unit
+                }
             }
         }
     }
@@ -380,24 +385,19 @@ fun ReservationMapPreview() {
     ReservationMap(
         id, null, { id = it }, lst, listOf(
             Decoration(
-                type = "Icon",
-                name = "toilet",
-                x = 0.27f,
-                y = 0.348f,
-                width = null,
-                height = null
+                type = "Icon", name = "toilet", x = 0.27f, y = 0.348f, width = null, height = null
             ), Decoration(
                 type = "Rectangle",
                 name = "door",
                 x = 0.125f,
-                y = 0.425f,
+                y = 0.42f,
                 width = 0.07f,
                 height = 0.015f
             ), Decoration(
                 type = "Rectangle",
                 name = "door",
                 x = 0.35f,
-                y = 0.425f,
+                y = 0.42f,
                 width = 0.05f,
                 height = 0.015f
             ), Decoration(
@@ -418,35 +418,25 @@ fun ReservationMapPreview() {
                 type = "Rectangle",
                 name = "door",
                 x = 0.2f,
-                y = 0.5f,
+                y = 0.505f,
                 width = 0.07f,
                 height = 0.015f
             ), Decoration(
                 type = "Rectangle",
                 name = "door",
-                x = 0.2f,
-                y = 0.5f,
-                width = 0.07f,
-                height = 0.015f
-            ), Decoration(
-                type = "Rectangle",
-                name = "door",
-                x = 0.588f,
-                y = 0.5f,
+                x = 0.59f,
+                y = 0.505f,
                 width = 0.07f,
                 height = 0.015f
             ), Decoration(
                 type = "Rectangle",
                 name = "door",
                 x = 0.75f,
-                y = 0.5f,
+                y = 0.505f,
                 width = 0.07f,
                 height = 0.015f
             ), Decoration(
-                type = "Icon",
-                name = "entrance_left",
-                x = 0.94f,
-                y = 0.4f
+                type = "Icon", name = "entrance_left", x = 0.94f, y = 0.4f
             )
         )
     )

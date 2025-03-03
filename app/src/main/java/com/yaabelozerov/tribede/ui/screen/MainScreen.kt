@@ -121,6 +121,11 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
             Text("Забронировать", style = MaterialTheme.typography.headlineMedium)
             var currentChosenType by remember { mutableStateOf<SpaceType?>(null) }
             Column(Modifier.fillMaxWidth()) {
+                AnimatedVisibility(chosenZone == null) {
+                    Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.Center) {
+                        Text("Выберите зону", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
                 ReservationMap(
                     chosenZone, currentChosenType, {
                         if (chosenZone == it) {
