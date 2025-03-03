@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.ApiClient
 import com.yaabelozerov.tribede.data.model.ConfirmQr
+import com.yaabelozerov.tribede.data.model.UserDto
+import com.yaabelozerov.tribede.data.model.UserPassportDTO
 import com.yaabelozerov.tribede.data.model.toDomainModel
 import com.yaabelozerov.tribede.domain.model.AdminBookingUI
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +21,11 @@ data class AdminState(
     val bookings: List<AdminBookingUI> = emptyList(),
 
     val isLoading: Boolean = false,
-    val currentZones: List<String> = emptyList()
+    val currentZones: List<String> = emptyList(),
+
+    val users: List<UserDto> = emptyList(),
+    val currentUser: UserDto? = null,
+    val currentPassport: UserPassportDTO? = null
 
 )
 
@@ -28,7 +34,9 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
     val state = _state.asStateFlow()
 
     init {
+        println("im inited")
         fetchData()
+
     }
 
     fun addFilterZone(zone: String) {
@@ -48,11 +56,26 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
         }
     }
 
+    fun selectCurrent(user: UserDto) {
+        _state.update { it.copy(currentUser = user) }
+        println("vm ${_state.value.currentUser}")
+        viewModelScope.launch(Dispatchers.IO) {
+            Application.dataStore.getToken().first().let { token ->
+                val result = api.getAdminPassport(token, user.id)
+                result.getOrNull()?.let { res ->
+                    _state.update { it.copy(currentPassport = res) }
+                }
+                result.exceptionOrNull()?.printStackTrace()
+            }
+        }
+    }
+
     fun confirmQr(code: String) {
         viewModelScope.launch(Dispatchers.IO) {
             Application.dataStore.getToken().first().let { token ->
                 api.confirmQr(token, ConfirmQr(code))
             }
+            fetchData()
         }
     }
 
@@ -72,6 +95,12 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
                 zones.getOrNull()?.let {
                     _state.update { state ->
                         state.copy(zones = it.map { it.name }.sorted())
+                    }
+                }
+                val users = api.getAdminUsers(token)
+                users.getOrNull()?.let {
+                    _state.update { state ->
+                        state.copy(users = it)
                     }
                 }
             }

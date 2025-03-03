@@ -19,6 +19,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.EventAvailable
+import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QrCode
@@ -45,9 +47,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
+import com.yaabelozerov.tribede.data.model.BookResponseDTO
 import com.yaabelozerov.tribede.domain.model.AdminBookingUI
 import com.yaabelozerov.tribede.domain.model.BookStatus
 import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -175,15 +182,93 @@ fun AdminBookCard(
                     onClick = { onMove(model.id) }, shape = RoundedCornerShape(6.dp),
                     elevation = FloatingActionButtonDefaults.elevation(0.dp)
                 ) { Icon(Icons.Filled.Update, null) }
+            }
+            FloatingActionButton(
+                onClick = { onDelete(model.id) }, shape = RoundedCornerShape(6.dp),
+                elevation = FloatingActionButtonDefaults.elevation(0.dp)
+            ) { Icon(Icons.Filled.Cancel, null) }
+
+
+
+        }
+    }
+}
+
+@Composable
+fun AdminBookCardForBookUI(
+    model: BookResponseDTO,
+    onMove: (String) -> Unit = {},
+    onDelete: (String) -> Unit = {},
+    ) {
+    // только Pending или Active
+
+    val startDateTime = LocalDateTime.ofInstant(Instant.parse(model.start), ZoneId.systemDefault())
+    val endDateTime = LocalDateTime.ofInstant(Instant.parse(model.end), ZoneId.systemDefault())
+    var minutes = ChronoUnit.MINUTES.between(startDateTime, endDateTime)
+    val hours = minutes / 60
+    minutes %= 60
+
+    val status = BookStatus.entries.getOrElse(model.status) { BookStatus.ACTIVE }
+
+    Column(Modifier.fillMaxWidth()) {
+        Text(model.zoneName, style = MaterialTheme.typography.titleMedium)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+
+                model.officeSeatNumber?.let {
+                    Text("Место $it", style = MaterialTheme.typography.titleSmall)
+                }
+                Text(
+                    "${startDateTime.toLocalDate()}"
+                )
+
+                Text(
+                    "c  ${startDateTime.hour.toString().padStart(2, '0')}:" +
+                            startDateTime.minute.toString().padStart(2, '0')
+                )
+
+                Text(
+                    "до ${endDateTime.hour.toString().padStart(2, '0')}:" +
+                            endDateTime.minute.toString().padStart(2, '0')
+                )
+
+                if (status == BookStatus.PENDING) {
+                    Row {
+                        Icon(Icons.Filled.HourglassTop, contentDescription = null)
+                        Text("Ждём вас")
+                    }
+                } else {
+                    if (status == BookStatus.CANCELLED) {
+                        Row {
+                            Icon(Icons.Filled.EventBusy, contentDescription = null)
+                            Text("Отменено")
+                        }
+                    } else if (status == BookStatus.ENDED) {
+                        Row {
+                            Icon(Icons.Filled.EventAvailable, contentDescription = null)
+                            Text("Завершено")
+                        }
+                    } else if (status == BookStatus.ACTIVE) {
+                        Row {
+                            Icon(Icons.Filled.PlayArrow, contentDescription = null)
+                            Text("В процессе")
+                        }
+                    }
+
+                }
+            }
+            Spacer(Modifier.width(16.dp))
+            if (status != BookStatus.ACTIVE) {
+                FloatingActionButton(
+                    onClick = { onMove(model.id) }, shape = RoundedCornerShape(6.dp),
+                    elevation = FloatingActionButtonDefaults.elevation(0.dp)
+                ) { Icon(Icons.Filled.Update, null) }
                 FloatingActionButton(
                     onClick = { onDelete(model.id) }, shape = RoundedCornerShape(6.dp),
                     elevation = FloatingActionButtonDefaults.elevation(0.dp)
                 ) { Icon(Icons.Filled.Cancel, null) }
 
             }
-
-
-
         }
     }
 }

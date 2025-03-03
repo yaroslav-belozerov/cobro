@@ -10,6 +10,7 @@ import com.yaabelozerov.tribede.data.model.RegisterDto
 import com.yaabelozerov.tribede.data.model.SeatDto
 import com.yaabelozerov.tribede.data.model.TokenDto
 import com.yaabelozerov.tribede.data.model.UserDto
+import com.yaabelozerov.tribede.data.model.UserPassportDTO
 import com.yaabelozerov.tribede.data.model.ZoneDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -95,6 +96,20 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
     suspend fun getAdminBookings(token: String): Result<List<AdminBookResponse>> = runCatching {
         httpClient.get {
             url("/admin/active")
+            header("Authorization", "Bearer $token")
+        }.body()
+    }
+
+    suspend fun getAdminUsers(token: String): Result<List<UserDto>> = runCatching {
+        httpClient.get {
+            url("/user/all")
+            header("Authorization", "Bearer $token")
+        }.body()
+    }
+
+    suspend fun getAdminPassport(token: String, id: String): Result<UserPassportDTO> = runCatching {
+        httpClient.get {
+            url("/user/$id/passport")
             header("Authorization", "Bearer $token")
         }.body()
     }

@@ -12,5 +12,6 @@ data class NavIcon(val selectedIcon: ImageVector, val unselectedIcon: ImageVecto
 enum class Nav(val route: String, val icon: NavIcon?) {
     BOOK("book", NavIcon(selectedIcon = Icons.Filled.Home, unselectedIcon = Icons.Outlined.Home)),
     USER("user", NavIcon(selectedIcon = Icons.Filled.Person, unselectedIcon = Icons.Outlined.Person)),
-    SCAN("scan", null)
+    SCAN("scan", null),
+    USER_DETAILED("userDetailed", null),
 }
