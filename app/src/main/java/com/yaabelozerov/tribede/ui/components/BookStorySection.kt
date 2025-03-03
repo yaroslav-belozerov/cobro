@@ -31,8 +31,8 @@ import java.time.temporal.ChronoUnit
 
 @Composable
 fun BookCard(model: BookResponseDTO, onClick: (String) -> Unit = {}) {
-    val startDateTime = LocalDateTime.ofInstant(Instant.parse(model.start), ZoneId.of("UTC"))
-    val endDateTime = LocalDateTime.ofInstant(Instant.parse(model.end), ZoneId.of("UTC"))
+    val startDateTime = LocalDateTime.ofInstant(Instant.parse(model.start), ZoneId.systemDefault())
+    val endDateTime = LocalDateTime.ofInstant(Instant.parse(model.end), ZoneId.systemDefault())
     var minutes = ChronoUnit.MINUTES.between(startDateTime, endDateTime)
     val hours = minutes / 60
     minutes %= 60

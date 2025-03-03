@@ -122,7 +122,9 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel = viewMode
             var currentChosenType by remember { mutableStateOf<SpaceType?>(null) }
             Column(Modifier.fillMaxWidth()) {
                 AnimatedVisibility(chosenZone == null) {
-                    Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.Center) {
+                    Row(Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp), horizontalArrangement = Arrangement.Center) {
                         Text("Выберите зону", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
@@ -505,8 +507,8 @@ private fun BookingDialog(
                         onClick = {
                             onClick(
                                 BookRequestDTO(
-                                    from = "$from:00.000Z",
-                                    to = "$to:00.000Z",
+                                    from = "${from.minusHours(3)}",
+                                    to = "${to.minusHours(3)}",
                                     description = description
                                 )
                             )

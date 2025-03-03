@@ -33,81 +33,9 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
         fetchZones()
         fetchDecor()
         viewModelScope.launch {
-//            val lst = listOf(
-//                Decoration(
-//                    type = "Icon",
-//                    name = "toilet",
-//                    x = 0.27f,
-//                    y = 0.348f,
-//                    width = null,
-//                    height = null
-//                ), Decoration(
-//                    type = "Rectangle",
-//                    name = "door",
-//                    x = 0.125f,
-//                    y = 0.425f,
-//                    width = 0.07f,
-//                    height = 0.015f
-//                ), Decoration(
-//                    type = "Rectangle",
-//                    name = "door",
-//                    x = 0.35f,
-//                    y = 0.425f,
-//                    width = 0.05f,
-//                    height = 0.015f
-//                ), Decoration(
-//                    type = "Rectangle",
-//                    name = "door",
-//                    x = 0.775f,
-//                    y = 0.28f,
-//                    width = 0.05f,
-//                    height = 0.015f
-//                ), Decoration(
-//                    type = "Rectangle",
-//                    name = "door",
-//                    x = 0.575f,
-//                    y = 0.28f,
-//                    width = 0.05f,
-//                    height = 0.015f
-//                ), Decoration(
-//                    type = "Rectangle",
-//                    name = "door",
-//                    x = 0.2f,
-//                    y = 0.5f,
-//                    width = 0.07f,
-//                    height = 0.015f
-//                ), Decoration(
-//                    type = "Rectangle",
-//                    name = "door",
-//                    x = 0.2f,
-//                    y = 0.5f,
-//                    width = 0.07f,
-//                    height = 0.015f
-//                ), Decoration(
-//                    type = "Rectangle",
-//                    name = "door",
-//                    x = 0.588f,
-//                    y = 0.5f,
-//                    width = 0.07f,
-//                    height = 0.015f
-//                ), Decoration(
-//                    type = "Rectangle",
-//                    name = "door",
-//                    x = 0.75f,
-//                    y = 0.5f,
-//                    width = 0.07f,
-//                    height = 0.015f
-//                )
-//            )
-//            Application.dataStore.getToken().first().let { token ->
-//                api.postDecor(token, Decoration(
-//                    type = "Icon",
-//                    x = 1.0f,
-//                    y = 0.5f, name = "entrance_left"
-//                )).also { it.exceptionOrNull()?.printStackTrace() }
-//            }
         }
     }
+
 
     private fun fetchZones() {
         viewModelScope.launch {
@@ -115,8 +43,12 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
                 val result = api.getZones(token)
                 result.getOrNull()?.let {
                     val zones = it.map {
-                        val seats = api.getSeatsForOfficeZone(token, it.id).also { it.exceptionOrNull()?.printStackTrace() }
-                        it.toSpace(seats.getOrNull() ?: emptyList())
+                        if (it.type == "Office") {
+                            val seats = api.getSeatsForOfficeZone(token, it.id).also { it.exceptionOrNull()?.printStackTrace() }
+                            it.toSpace(seats.getOrNull() ?: emptyList()) //TODO потом починить
+                        } else {
+                            it.toSpace(emptyList())
+                        }
                     }
                     _state.update { state ->
                         state.copy(zones = zones)
@@ -158,7 +90,8 @@ class MainViewModel(private val api: ApiClient = ApiClient()): ViewModel() {
     fun book(req: BookRequestDTO, zoneId: String, seatId: String?, callback: () -> Unit) {
         viewModelScope.launch {
             Application.dataStore.getToken().first().let { token ->
-                api.postBook(token, req, zoneId, seatId).also { println(it) }
+                println("book $token $req $zoneId $seatId")
+                api.postBook(token, req, zoneId, seatId).exceptionOrNull()?.printStackTrace()
                 getBookings(zoneId, seatId)
                 callback()
             }

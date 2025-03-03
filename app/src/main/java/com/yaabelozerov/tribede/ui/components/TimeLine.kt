@@ -28,11 +28,6 @@ import androidx.compose.ui.unit.sp
 import com.yaabelozerov.tribede.domain.model.BookStatus
 import com.yaabelozerov.tribede.domain.model.BookingUI
 
-data class Booking(
-    val startTime: Int, // Время начала бронирования (в миллисекундах)
-    val endTime: Int, // Время окончания бронирования (в миллисекундах)
-    val isBooked: Boolean, // Занято или свободно
-)
 
 @Composable
 fun Timeline(

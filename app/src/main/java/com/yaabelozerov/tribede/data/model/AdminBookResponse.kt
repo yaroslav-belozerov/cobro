@@ -24,9 +24,9 @@ data class AdminBookResponse(
 
 fun AdminBookResponse.toDomainModel() = AdminBookingUI(
     id = id,
-    createdAt = LocalDateTime.ofInstant(Instant.parse(createdAt), ZoneId.of("UTC")),
-    start = LocalDateTime.ofInstant(Instant.parse(start), ZoneId.of("UTC")),
-    end = LocalDateTime.ofInstant(Instant.parse(end), ZoneId.of("UTC")),
+    createdAt = LocalDateTime.ofInstant(Instant.parse(createdAt), ZoneId.systemDefault()),
+    start = LocalDateTime.ofInstant(Instant.parse(start), ZoneId.systemDefault()),
+    end = LocalDateTime.ofInstant(Instant.parse(end), ZoneId.systemDefault()),
     description = description,
     zoneName = zoneName,
     officeSeatNumber = officeSeatNumber,
