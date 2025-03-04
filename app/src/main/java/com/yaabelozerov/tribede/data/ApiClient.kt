@@ -17,6 +17,7 @@ import com.yaabelozerov.tribede.data.model.UserDto
 import com.yaabelozerov.tribede.data.model.UserPassportDTO
 import com.yaabelozerov.tribede.data.model.ZoneDto
 import com.yaabelozerov.tribede.ui.components.Decoration
+import com.yaabelozerov.tribede.ui.screen.RequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -258,6 +259,14 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
         httpClient.get {
             url("decorations")
             header("Authorization", "Bearer $token")
+        }.body()
+    }
+
+    suspend fun sendRequest(token: String, body: RequestDto): Result<String> = kotlin.runCatching {
+        httpClient.post {
+            url("request")
+            header("Authorization", "Bearer $token")
+            setBody(body)
         }.body()
     }
 }

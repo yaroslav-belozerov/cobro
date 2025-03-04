@@ -1,11 +1,13 @@
 package com.yaabelozerov.tribede.ui.screen
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -57,6 +60,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,16 +76,20 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.R
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
 import com.yaabelozerov.tribede.data.model.SeatDto
 import com.yaabelozerov.tribede.data.model.UserRole
 import com.yaabelozerov.tribede.domain.model.BookStatus
 import com.yaabelozerov.tribede.domain.model.BookingUI
+import com.yaabelozerov.tribede.ui.App
 import com.yaabelozerov.tribede.ui.components.CoworkingSpace
 import com.yaabelozerov.tribede.ui.components.MyButton
 import com.yaabelozerov.tribede.ui.components.MyTextField
@@ -89,9 +97,13 @@ import com.yaabelozerov.tribede.ui.components.ReservationMap
 import com.yaabelozerov.tribede.ui.components.SpaceType
 import com.yaabelozerov.tribede.ui.components.Timeline
 import com.yaabelozerov.tribede.ui.components.color
+import com.yaabelozerov.tribede.ui.util.Actions
 import com.yaabelozerov.tribede.ui.viewmodels.MainState
 import com.yaabelozerov.tribede.ui.viewmodels.MainViewModel
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import org.koin.dsl.module
 import java.time.Instant
 import java.time.LocalDate
@@ -129,6 +141,14 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel) {
     var chosenZone by remember { mutableStateOf<CoworkingSpace?>(null) }
     var chosenSeat by remember { mutableStateOf<SeatDto?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    var displayIconOptions by remember { mutableStateOf(false) }
+    var actionDialogOpen by remember { mutableStateOf(false) }
+    var currentChosenAction by remember { mutableStateOf<Actions?>(null) }
+    val fast = user.user?.books?.map {
+        LocalDateTime.ofInstant(Instant.parse(it.start), ZoneId.systemDefault()) to it
+    }?.sortedBy { it.first }
+        ?.firstOrNull { it.second.status == BookStatus.ACTIVE.ordinal || it.second.status == BookStatus.PENDING.ordinal }
     state.zones.takeIf { it.isNotEmpty() }?.let { zones ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -211,42 +231,81 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel) {
                         { chosenSeat = if (chosenSeat == it) null else it })
                 }
             }
-            user.user?.books?.map {
-                LocalDateTime.ofInstant(Instant.parse(it.start), ZoneId.systemDefault()) to it
-            }?.sortedBy { it.first }
-                ?.firstOrNull { it.second.status == BookStatus.ACTIVE.ordinal || it.second.status == BookStatus.PENDING.ordinal }
-                ?.let { (date, book) ->
-                    ElevatedCard(
-                        onClick = {},
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                    ) {
-                        Column(Modifier.fillMaxWidth().padding(12.dp)) {
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                when (book.status) {
-                                    BookStatus.PENDING.ordinal -> {
-                                        Text("Ждём вас")
-                                    }
 
-                                    BookStatus.ACTIVE.ordinal -> {
-                                        Text("Добро пожаловать")
-                                    }
+            fast?.let { (date, book) ->
+                ElevatedCard(
+                    onClick = { displayIconOptions = !displayIconOptions },
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                ) {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp)
+                    ) {
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            when (book.status) {
+                                BookStatus.PENDING.ordinal -> {
+                                    Text("Ждём вас")
                                 }
-                                Icon(when (book.status) {
+
+                                BookStatus.ACTIVE.ordinal -> {
+                                    Text("Добро пожаловать")
+                                }
+                            }
+                            Icon(
+                                when (book.status) {
                                     BookStatus.PENDING.ordinal -> Icons.Filled.HourglassTop
                                     BookStatus.ACTIVE.ordinal -> Icons.Filled.PlayCircleFilled
                                     else -> Icons.Default.AccessAlarm
-                                }, contentDescription = null, modifier = Modifier.size(24.dp))
+                                }, contentDescription = null, modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Text(book.zoneName + (book.officeSeatNumber?.let { " Место $it" } ?: ""),
+                            style = MaterialTheme.typography.titleLarge)
+                        if (book.status == BookStatus.PENDING.ordinal) Text(date.run {
+                            "${dayOfMonth.toString().padStart(2, '0')}.${
+                                monthValue.toString().padStart(2, '0')
+                            } в $hour:${
+                                minute.toString().padStart(2, '0')
+                            }"
+                        }, style = MaterialTheme.typography.titleMedium)
+                    }
+                    AnimatedVisibility(displayIconOptions) {
+                        FlowRow(maxItemsInEachRow = 3) {
+                            Actions.entries.forEach {
+                                OutlinedCard(modifier = Modifier
+                                    .fillMaxWidth(.33f)
+                                    .aspectRatio(1f)
+                                    .padding(4.dp), onClick = {
+                                    currentChosenAction = it
+                                    actionDialogOpen = true
+                                }) {
+                                    Column(
+                                        verticalArrangement = Arrangement.spacedBy(
+                                            4.dp, alignment = Alignment.CenterVertically
+                                        ),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(4.dp)
+                                    ) {
+                                        Icon(
+                                            it.icon,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Text(it.title, textAlign = TextAlign.Center)
+                                    }
+                                }
                             }
-                            Text(book.zoneName + (book.officeSeatNumber?.let { " Место $it" } ?: ""), style = MaterialTheme.typography.titleLarge)
-                            if (book.status == BookStatus.PENDING.ordinal) Text(date.run {
-                                "${dayOfMonth.toString().padStart(2, '0')}.${monthValue.toString().padStart(2, '0')} в $hour:${
-                                    minute.toString().padStart(2, '0')
-                                }"
-                            }, style = MaterialTheme.typography.titleMedium)
                         }
                     }
                 }
+            }
         }
 
         if (isBookingDialogOpen) {
@@ -274,10 +333,68 @@ fun MainScreen(vm: MainViewModel = viewModel(), userVm: UserViewModel) {
                     bookingSuccess = isBookingSuccess
                 )
             }
+        }
 
+        val ctx = LocalContext.current
+        if (actionDialogOpen) {
+            val scope = rememberCoroutineScope()
+            currentChosenAction?.let { action ->
+                fast?.second?.id?.let { bookId ->
+                    Dialog(onDismissRequest = {
+                        actionDialogOpen = false
+                        currentChosenAction = null
+                    }) {
+                        var req by remember {
+                            mutableStateOf(
+                                RequestDto(
+                                    text = "",
+                                    actionNumber = action.ordinal,
+                                    additionalInfo = "",
+                                    bookId = bookId
+                                )
+                            )
+                        }
+
+                        Card {
+                            Column(Modifier.padding(16.dp)) {
+                                Text(action.title, style = MaterialTheme.typography.titleLarge)
+                                MyTextField(
+                                    req.text,
+                                    onValueChange = { req = req.copy(text = it) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    placeholder = "Укажите больше информации"
+                                )
+                                MyButton(onClick = {
+                                    scope.launch {
+                                        Application.dataStore.getToken().first().let { token ->
+                                            Application.apiClient.sendRequest(token, req).also {
+                                                if (it.isSuccess) Toast.makeText(
+                                                    ctx, "Запрос отправлен", Toast.LENGTH_SHORT
+                                                ).show()
+                                                it.exceptionOrNull()?.printStackTrace()
+                                            }
+                                            actionDialogOpen = false
+                                            currentChosenAction = null
+                                        }
+                                    }
+                                }, text = "Отправить", modifier = Modifier.fillMaxWidth())
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
+
+@Serializable
+data class RequestDto(
+    val text: String,
+    val actionNumber: Int,
+    val status: Int = 0,
+    val additionalInfo: String,
+    val bookId: String,
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
