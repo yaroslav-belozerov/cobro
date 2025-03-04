@@ -135,7 +135,7 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
                 val actions = api.getActions(token)
                 actions.getOrNull()?.let {
                     _state.update { state ->
-                        state.copy(actions = it.map { it.toDomainModel() })
+                        state.copy(actions = it.map { it.toDomainModel() }.sortedBy { it.status })
                     }
                 }
                 actions.exceptionOrNull()?.printStackTrace()

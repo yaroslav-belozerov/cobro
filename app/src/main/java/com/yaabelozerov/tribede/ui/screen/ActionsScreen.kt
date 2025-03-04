@@ -67,7 +67,7 @@ fun ActionsScreen(vm: AdminViewModel) {
                 Spacer(Modifier.height(8.dp))
                 HorizontalDivider()
             }
-            items(actions.sortedBy { it.status }) {
+            items(actions) {
                 ActionCard(it, { vm.fetchData() })
             }
         }
