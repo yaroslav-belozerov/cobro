@@ -158,6 +158,19 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
         }
     }
 
+    suspend fun markAction(id: String, token: String, status: Int) {
+        try {
+            httpClient.patch {
+                url("/request/$id/mark")
+                parameter("status", status)
+                header("Authorization", "Bearer $token")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+    }
+
     suspend fun sendPhoto(file: File, id: String, token: String): Result<String> = runCatching {
         httpClient.post {
             url("/user/$id/verification-photo")

@@ -5,7 +5,7 @@ data class ActionUI(
     val text: String,
     val actionNumber: Int?,
     val createdAt: String,
-    val status: Long,
+    var status: Int,
     val username: String,
     val additionalInfo: String,
     val avatarUrl: String

@@ -9,7 +9,7 @@ data class ActionDTO(
     val text: String,
     val actionNumber: Int?,
     val createdAt: String,
-    val status: Long,
+    val status: Int,
     val additionalInfo: String,
     val bookId: String,
     val book: Book1,
@@ -24,7 +24,7 @@ data class Book1(
     val userId: String,
     val user: User,
     val description: String,
-    val status: Long,
+    val status: Int,
 )
 
 @Serializable
