@@ -1,6 +1,5 @@
 package com.yaabelozerov.tribede.ui.screen
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -114,9 +113,9 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
 
                         }
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Серия: ${passport.serial}Номер: ${passport.number}")
+                            Text("${passport.serial} №${passport.number}")
                             Spacer(Modifier.size(4.dp))
-                            Text("${passport.firstname} ${passport.lastname} ${passport.middlename}")
+                            Text(" ${passport.lastname} ${passport.firstname} ${passport.middlename}")
                             Spacer(Modifier.size(4.dp))
                             Text("День рождения: ${passport.birthday}")
                         }
