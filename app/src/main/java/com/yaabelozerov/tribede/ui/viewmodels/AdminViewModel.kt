@@ -12,6 +12,7 @@ import com.yaabelozerov.tribede.data.model.QrConfirmResponse
 import com.yaabelozerov.tribede.data.model.UserDto
 import com.yaabelozerov.tribede.data.model.UserPassportDTO
 import com.yaabelozerov.tribede.data.model.toDomainModel
+import com.yaabelozerov.tribede.domain.model.ActionUI
 import com.yaabelozerov.tribede.domain.model.AdminBookingUI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +34,7 @@ data class AdminState(
 
     val qrRequest: QrConfirmResponse? = null,
 
-    val actions: List<ActionDTO> = emptyList(),
+    val actions: List<ActionUI> = emptyList(),
 )
 
 class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewModel() {
@@ -134,7 +135,7 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
                 val actions = api.getActions(token)
                 actions.getOrNull()?.let {
                     _state.update { state ->
-                        state.copy(actions = it)
+                        state.copy(actions = it.map { it.toDomainModel() })
                     }
                 }
                 actions.exceptionOrNull()?.printStackTrace()
