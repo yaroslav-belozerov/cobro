@@ -41,9 +41,9 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
     val passport = vm.state.collectAsState().value.currentPassport
     println("screen" + user.toString())
     println(passport)
-//    BackHandler {
-//        onBack()
-//    }
+    BackHandler {
+        vm.clearCurrent()
+    }
     LazyColumn(
         Modifier
             .fillMaxSize()
@@ -98,8 +98,6 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
 
                         }
                     }
-
-
                     HorizontalDivider()
                     Text("Паспорт", style = MaterialTheme.typography.headlineMedium)
                     Row(verticalAlignment = Alignment.CenterVertically) {

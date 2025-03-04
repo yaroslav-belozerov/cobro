@@ -6,11 +6,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.data.ApiClient
+import com.yaabelozerov.tribede.data.model.ActionDTO
 import com.yaabelozerov.tribede.data.model.ConfirmQr
 import com.yaabelozerov.tribede.data.model.QrConfirmResponse
 import com.yaabelozerov.tribede.data.model.UserDto
 import com.yaabelozerov.tribede.data.model.UserPassportDTO
 import com.yaabelozerov.tribede.data.model.toDomainModel
+import com.yaabelozerov.tribede.domain.model.ActionUI
 import com.yaabelozerov.tribede.domain.model.AdminBookingUI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,8 +32,9 @@ data class AdminState(
     val currentUser: UserDto? = null,
     val currentPassport: UserPassportDTO? = null,
 
-    val qrRequest: QrConfirmResponse? = null
+    val qrRequest: QrConfirmResponse? = null,
 
+    val actions: List<ActionUI> = emptyList(),
 )
 
 class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewModel() {
@@ -60,6 +63,11 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
             }
         }
     }
+
+    fun clearCurrent() {
+        _state.update { it.copy(currentUser = null, currentPassport = null) }
+    }
+
 
     fun selectCurrent(user: UserDto) {
         _state.update { it.copy(currentUser = user) }
@@ -124,6 +132,13 @@ class AdminViewModel(private val api: ApiClient = Application.apiClient) : ViewM
                         state.copy(users = it)
                     }
                 }
+                val actions = api.getActions(token)
+                actions.getOrNull()?.let {
+                    _state.update { state ->
+                        state.copy(actions = it.map { it.toDomainModel() })
+                    }
+                }
+                actions.exceptionOrNull()?.printStackTrace()
             }
             _state.update { it.copy(isLoading = false) }
         }

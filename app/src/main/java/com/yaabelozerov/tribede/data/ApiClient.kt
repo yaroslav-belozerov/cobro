@@ -1,5 +1,6 @@
 package com.yaabelozerov.tribede.data
 
+import com.yaabelozerov.tribede.data.model.ActionDTO
 import com.yaabelozerov.tribede.data.model.AdminBookResponse
 import com.yaabelozerov.tribede.data.model.AdminPhotoResponse
 import com.yaabelozerov.tribede.data.model.BookRequestDTO
@@ -134,6 +135,13 @@ class ApiClient(private val httpClient: HttpClient = Net.apiClient) {
     suspend fun getAdminPhoto(token: String, id: String): Result<AdminPhotoResponse> = runCatching {
         httpClient.get {
             url("/user/$id/verification-photo")
+            header("Authorization", "Bearer $token")
+        }.body()
+    }
+
+    suspend fun getActions(token: String): Result<List<ActionDTO>> = kotlin.runCatching {
+        httpClient.get {
+            url("/request/today")
             header("Authorization", "Bearer $token")
         }.body()
     }

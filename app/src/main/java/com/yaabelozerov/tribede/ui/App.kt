@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.yaabelozerov.tribede.Application
 import com.yaabelozerov.tribede.ui.screen.AdminUserScreen
+import com.yaabelozerov.tribede.ui.screen.ActionsScreen
 import com.yaabelozerov.tribede.ui.screen.MainAdminScreen
 import com.yaabelozerov.tribede.ui.screen.MainScreen
 import com.yaabelozerov.tribede.ui.screen.QrPage
@@ -20,7 +21,6 @@ import com.yaabelozerov.tribede.ui.screen.UserDetailed
 import com.yaabelozerov.tribede.ui.screen.UserScreen
 import com.yaabelozerov.tribede.ui.util.Nav
 import com.yaabelozerov.tribede.ui.viewmodels.AdminViewModel
-import com.yaabelozerov.tribede.ui.viewmodels.MainViewModel
 import com.yaabelozerov.tribede.ui.viewmodels.UserViewModel
 
 @Composable
@@ -87,6 +87,10 @@ fun App(
 
         composable(Nav.USER_DETAILED.route) {
             UserDetailed(vm = adminVM, onBack = { navCtrl.navigate(Nav.USER.route) })
+        }
+
+        composable("actions") {
+            ActionsScreen(adminVM)
         }
     }
 }
