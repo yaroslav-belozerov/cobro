@@ -15,6 +15,9 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChatBubble
+import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -108,8 +111,32 @@ class MainActivity : ComponentActivity() {
                                 navCtrl.currentBackStackEntry?.destination?.route != Nav.SCAN.route
                             ) {
                                 BottomAppBar {
+                                    if (Application.dataStore.getIsAdmin()
+                                            .collectAsState(false).value
+                                    ) {
+                                        NavigationBarItem(
+                                            selected = current?.route == "actions",
+                                            icon = {
+                                                Icon(
+                                                    if (current?.route == "actions") Icons.Filled.ChatBubble else Icons.Filled.ChatBubbleOutline,
+                                                    null,
+                                                    Modifier.size(30.dp)
+                                                )
+                                            },
+                                            onClick = {
+                                                navCtrl.navigate("actions") {
+                                                    restoreState = true
+                                                    launchSingleTop = true
+                                                    popUpTo(Nav.BOOK.route) {
+                                                        saveState = true
+                                                    }
+                                                }
+                                            }
+                                        )
+                                    }
                                     Nav.entries.forEach {
                                         val selected = it == current
+
                                         it.icon?.let { ic -> // если иконка добавлена в файл Nav,
                                             // то он отобразит её в Bottom bar
                                             NavigationBarItem(

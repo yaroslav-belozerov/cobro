@@ -72,8 +72,8 @@ fun MainAdminScreen(vm: AdminViewModel = viewModel(), navigateToScan: () -> Unit
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 item {
-                    Spacer(Modifier.height(16.dp))
-                    Text("Все бронирования", style = MaterialTheme.typography.headlineMedium)
+                    Spacer(Modifier.height(24.dp))
+                    Text("Все брони", style = MaterialTheme.typography.headlineLarge)
                     Spacer(Modifier.height(8.dp))
                     HorizontalDivider()
                 }
