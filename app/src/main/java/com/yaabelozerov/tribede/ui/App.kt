@@ -86,7 +86,7 @@ fun App(
         }
 
         composable(Nav.USER_DETAILED.route) {
-            UserDetailed(vm = adminVM, onBack = { navCtrl.navigate(Nav.USER.route) })
+            UserDetailed(vm = adminVM, onBack = { navCtrl.navigateUp() })
         }
 
         composable("actions") {

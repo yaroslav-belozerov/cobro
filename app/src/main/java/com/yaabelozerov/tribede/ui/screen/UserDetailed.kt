@@ -44,6 +44,7 @@ fun UserDetailed(vm: AdminViewModel = viewModel(), onBack: () -> Unit) {
     println(passport)
     BackHandler {
         vm.clearCurrent()
+        onBack()
     }
     LazyColumn(
         Modifier
