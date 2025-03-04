@@ -36,6 +36,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.HourglassTop
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PlayCircleFilled
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -619,50 +621,58 @@ fun BookingDialog(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                VerticalPager(
-                                    hourStartPager,
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    contentPadding = PaddingValues(
-                                        horizontal = 8.dp, vertical = 4.dp
-                                    ),
-                                    modifier = Modifier
-                                        .clip(MaterialTheme.shapes.small)
-                                        .height(56.dp)
-                                        .width(72.dp)
-                                        .background(MaterialTheme.colorScheme.surfaceDim),
-                                ) {
-                                    Row(
-                                        modifier = Modifier.height(56.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = null, tint = Color.Gray)
+                                    VerticalPager(
+                                        hourStartPager,
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        contentPadding = PaddingValues(
+                                            horizontal = 8.dp, vertical = 4.dp
+                                        ),
+                                        modifier = Modifier
+                                            .clip(MaterialTheme.shapes.small)
+                                            .height(56.dp)
+                                            .width(72.dp)
+                                            .background(MaterialTheme.colorScheme.surfaceDim),
                                     ) {
-                                        Text(
-                                            hours[it].toString().padStart(2, '0'),
-                                            style = MaterialTheme.typography.titleLarge
-                                        )
+                                        Row(
+                                            modifier = Modifier.height(56.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                hours[it].toString().padStart(2, '0'),
+                                                style = MaterialTheme.typography.titleLarge
+                                            )
+                                        }
                                     }
+                                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color.Gray)
                                 }
                                 Text(":", style = MaterialTheme.typography.titleLarge)
-                                VerticalPager(
-                                    minuteStartPager,
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    contentPadding = PaddingValues(
-                                        horizontal = 8.dp, vertical = 4.dp
-                                    ),
-                                    modifier = Modifier
-                                        .clip(MaterialTheme.shapes.small)
-                                        .height(56.dp)
-                                        .width(72.dp)
-                                        .background(MaterialTheme.colorScheme.surfaceDim),
-                                ) {
-                                    Row(
-                                        modifier = Modifier.height(56.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = null, tint = Color.Gray)
+                                    VerticalPager(
+                                        minuteStartPager,
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        contentPadding = PaddingValues(
+                                            horizontal = 8.dp, vertical = 4.dp
+                                        ),
+                                        modifier = Modifier
+                                            .clip(MaterialTheme.shapes.small)
+                                            .height(56.dp)
+                                            .width(72.dp)
+                                            .background(MaterialTheme.colorScheme.surfaceDim),
                                     ) {
-                                        Text(
-                                            minutes[it].toString().padStart(2, '0'),
-                                            style = MaterialTheme.typography.titleLarge
-                                        )
+                                        Row(
+                                            modifier = Modifier.height(56.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                minutes[it].toString().padStart(2, '0'),
+                                                style = MaterialTheme.typography.titleLarge
+                                            )
+                                        }
                                     }
+                                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color.Gray)
                                 }
                             }
 
@@ -673,50 +683,58 @@ fun BookingDialog(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                VerticalPager(
-                                    hourEndPager,
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    contentPadding = PaddingValues(
-                                        horizontal = 8.dp, vertical = 4.dp
-                                    ),
-                                    modifier = Modifier
-                                        .clip(MaterialTheme.shapes.small)
-                                        .height(56.dp)
-                                        .width(72.dp)
-                                        .background(MaterialTheme.colorScheme.surfaceDim),
-                                ) {
-                                    Row(
-                                        modifier = Modifier.height(56.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = null, tint = Color.Gray)
+                                    VerticalPager(
+                                        hourEndPager,
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        contentPadding = PaddingValues(
+                                            horizontal = 8.dp, vertical = 4.dp
+                                        ),
+                                        modifier = Modifier
+                                            .clip(MaterialTheme.shapes.small)
+                                            .height(56.dp)
+                                            .width(72.dp)
+                                            .background(MaterialTheme.colorScheme.surfaceDim),
                                     ) {
-                                        Text(
-                                            hours[it].toString().padStart(2, '0'),
-                                            style = MaterialTheme.typography.titleLarge
-                                        )
+                                        Row(
+                                            modifier = Modifier.height(56.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                hours[it].toString().padStart(2, '0'),
+                                                style = MaterialTheme.typography.titleLarge
+                                            )
+                                        }
                                     }
+                                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color.Gray)
                                 }
                                 Text(":", style = MaterialTheme.typography.titleLarge)
-                                VerticalPager(
-                                    minuteEndPager,
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    contentPadding = PaddingValues(
-                                        horizontal = 8.dp, vertical = 4.dp
-                                    ),
-                                    modifier = Modifier
-                                        .clip(MaterialTheme.shapes.small)
-                                        .height(56.dp)
-                                        .width(72.dp)
-                                        .background(MaterialTheme.colorScheme.surfaceDim),
-                                ) {
-                                    Row(
-                                        modifier = Modifier.height(56.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = null, tint = Color.Gray)
+                                    VerticalPager(
+                                        minuteEndPager,
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        contentPadding = PaddingValues(
+                                            horizontal = 8.dp, vertical = 4.dp
+                                        ),
+                                        modifier = Modifier
+                                            .clip(MaterialTheme.shapes.small)
+                                            .height(56.dp)
+                                            .width(72.dp)
+                                            .background(MaterialTheme.colorScheme.surfaceDim),
                                     ) {
-                                        Text(
-                                            minutes[it].toString().padStart(2, '0'),
-                                            style = MaterialTheme.typography.titleLarge
-                                        )
+                                        Row(
+                                            modifier = Modifier.height(56.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                minutes[it].toString().padStart(2, '0'),
+                                                style = MaterialTheme.typography.titleLarge
+                                            )
+                                        }
                                     }
+                                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color.Gray)
                                 }
                             }
 
