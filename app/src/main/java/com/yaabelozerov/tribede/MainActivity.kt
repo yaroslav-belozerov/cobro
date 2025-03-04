@@ -72,6 +72,7 @@ class MainActivity : ComponentActivity() {
             val navCtrl = rememberNavController()
             val current =
                 Nav.entries.find { navCtrl.currentBackStackEntryAsState().value?.destination?.route == it.route }
+            val currentRoute = navCtrl.currentBackStackEntryAsState().value?.destination?.route
             val authVm: AuthViewModel = viewModel()
             val authState by authVm.state.collectAsState()
             val scope = rememberCoroutineScope()
@@ -115,10 +116,10 @@ class MainActivity : ComponentActivity() {
                                             .collectAsState(false).value
                                     ) {
                                         NavigationBarItem(
-                                            selected = current?.route == "actions",
+                                            selected = currentRoute == "actions",
                                             icon = {
                                                 Icon(
-                                                    if (current?.route == "actions") Icons.Filled.ChatBubble else Icons.Filled.ChatBubbleOutline,
+                                                    if (currentRoute == "actions") Icons.Filled.ChatBubble else Icons.Filled.ChatBubbleOutline,
                                                     null,
                                                     Modifier.size(30.dp)
                                                 )
