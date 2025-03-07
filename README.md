@@ -29,7 +29,7 @@
 ## 💡 Features
 - [x] Book a room on an interactive map 
 - [x] Explore different options and room types 
-- [x] Move or cancel yout reservation
+- [x] Move or cancel out your reservation
 - [x] Access the facility via a QR-code 
 - [x] Ask or make a complaint during your session
 - [x] Some rooms may be reserved for corporate clients
